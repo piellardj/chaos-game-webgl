@@ -8,7 +8,9 @@ import Parameters from "./parameters";
 declare const Button: any;
 declare const Canvas: any;
 declare const Checkbox: any;
+declare const FileControl: any;
 declare const Range: any;
+declare const Tabs: any;
 
 function main() {
     const glParams = {
@@ -54,6 +56,59 @@ function main() {
         Canvas.setIndicatorText("Total points", totalPoints.toLocaleString());
     }
     setTotalPoints(0);
+
+    FileControl.addDownloadObserver("result-download-id", () => {
+        const canvas = Canvas.getCanvas() as HTMLCanvasElement;
+
+        Canvas.showLoader(true);
+
+        const size = +Tabs.getValues("result-dimensions")[0];
+        const nbPointsNeeded = totalPoints * Math.pow(size / canvas.height, 2);
+
+        /* Update CSS to allow the canvas to have the correct size */
+        canvas.style.position = "absolute";
+        canvas.style.width = size + "px";
+        canvas.style.height = size + "px";
+        canvas.width = size;
+        canvas.height = size;
+
+        GlCanvas.adjustSize();
+        Viewport.setFullCanvas(gl);
+
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        let nbPoints = 0;
+        const step = 524288;
+        while (nbPoints < nbPointsNeeded) {
+            nbPoints += step;
+            game.computeNextPoints(step);
+            game.draw();
+            Canvas.setLoaderText(Math.floor(100 * nbPoints / nbPointsNeeded) + " %");
+        }
+
+        function restoreCanvas() {
+            canvas.style.position = "";
+            canvas.style.width = "";
+            canvas.style.height = "";
+            needToAdjustSize = true;
+            Canvas.showLoader(false);
+            Canvas.setLoaderText("");
+        }
+
+        if ((canvas as any).msToBlob) { // for IE
+            const blob = (canvas as any).msToBlob();
+            window.navigator.msSaveBlob(blob, "chaos-game.png");
+            restoreCanvas();
+        } else {
+            canvas.toBlob((blob) => {
+                const link = document.createElement("a");
+                link.download = "chaos-game.png";
+                link.href = URL.createObjectURL(blob);
+                link.click();
+
+                restoreCanvas();
+            });
+        }
+    });
 
     let firstDraw = true;
     function mainLoop() {

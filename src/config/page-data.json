@@ -82,6 +82,38 @@
                     "step": 1
                 }
             ]
+        },
+        {
+            "title": "Result",
+            "controls": [
+                {
+                    "title": "Dimensions",
+                    "type": "tabs",
+                    "group": "result-dimensions",
+                    "unique": true,
+                    "options": [
+                        {
+                            "value": "1024",
+                            "label": "1024",
+                            "checked": true
+                        },
+                        {
+                            "value": "2048",
+                            "label": "2048"
+                        },
+                        {
+                            "value": "4096",
+                            "label": "4096"
+                        }
+                    ]
+                },
+                {
+                    "type": "file-download",
+                    "id": "result-download-id",
+                    "label": "Download",
+                    "flat": true
+                }
+            ]
         }
     ]
 }

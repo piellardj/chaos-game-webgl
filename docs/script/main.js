@@ -898,6 +898,50 @@ function main() {
         Canvas.setIndicatorText("Total points", totalPoints.toLocaleString());
     }
     setTotalPoints(0);
+    FileControl.addDownloadObserver("result-download-id", function () {
+        var canvas = Canvas.getCanvas();
+        Canvas.showLoader(true);
+        var size = +Tabs.getValues("result-dimensions")[0];
+        var nbPointsNeeded = totalPoints * Math.pow(size / canvas.height, 2);
+        canvas.style.position = "absolute";
+        canvas.style.width = size + "px";
+        canvas.style.height = size + "px";
+        canvas.width = size;
+        canvas.height = size;
+        GlCanvas.adjustSize();
+        viewport_1.default.setFullCanvas(gl_canvas_1.gl);
+        gl_canvas_1.gl.clear(gl_canvas_1.gl.COLOR_BUFFER_BIT);
+        var nbPoints = 0;
+        var step = 524288;
+        while (nbPoints < nbPointsNeeded) {
+            nbPoints += step;
+            game.computeNextPoints(step);
+            game.draw();
+            Canvas.setLoaderText(Math.floor(100 * nbPoints / nbPointsNeeded) + " %");
+        }
+        function restoreCanvas() {
+            canvas.style.position = "";
+            canvas.style.width = "";
+            canvas.style.height = "";
+            needToAdjustSize = true;
+            Canvas.showLoader(false);
+            Canvas.setLoaderText("");
+        }
+        if (canvas.msToBlob) {
+            var blob = canvas.msToBlob();
+            window.navigator.msSaveBlob(blob, "chaos-game.png");
+            restoreCanvas();
+        }
+        else {
+            canvas.toBlob(function (blob) {
+                var link = document.createElement("a");
+                link.download = "chaos-game.png";
+                link.href = URL.createObjectURL(blob);
+                link.click();
+                restoreCanvas();
+            });
+        }
+    });
     var firstDraw = true;
     function mainLoop() {
         if (needToAdjustSize) {

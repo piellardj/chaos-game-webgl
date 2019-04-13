@@ -40,7 +40,10 @@
         <input type="checkbox" id="side-pane-checkbox-id" class="hidden">
         <div id="canvas-container">
           <canvas id="canvas"></canvas>
-          <div class="loader"></div>
+          <div class="loader">
+            <span></span>
+            <div class="loader-animation"></div>
+          </div>
           <div id="indicators">
             <span id="Total points-indicator-id">Total points:</span>
           </div>
@@ -102,6 +105,35 @@
                 <div class="range">
                   <input type="range" min="1" max="20" value="15" step="1" class="slider" id="speed-range-id">
                   <span class="tooltip"></span>
+                </div>
+              </div>
+            </div>
+          </section>
+          <hr />
+
+          <section class="controls-section">
+            <h2>Result</h2>
+
+            <div class="controls-list">
+              <div class="control">
+                <label>Dimensions:</label>
+                <div class="tabs compact" id="result-dimensions-id">
+                  <input type="radio" name="result-dimensions" value="1024" id="result-dimensions-1024-id" checked />
+                  <label for="result-dimensions-1024-id">1024</label>
+                  <input type="radio" name="result-dimensions" value="2048" id="result-dimensions-2048-id" />
+                  <label for="result-dimensions-2048-id">2048</label>
+                  <input type="radio" name="result-dimensions" value="4096" id="result-dimensions-4096-id" />
+                  <label for="result-dimensions-4096-id">4096</label>
+                </div>
+              </div>
+              <div class="control">
+                <div class="file-control download ">
+                  <label class="file-control-button" id="result-download-id">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+                      <path d="M12 4L12 13 7 13 16 24 25 13 20 13 20 4ZM6 25L26 25 26 29 6 29Z" />
+                    </svg>
+                    <span>Download</span>
+                  </label>
                 </div>
               </div>
             </div>
