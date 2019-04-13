@@ -1,4 +1,4 @@
-import * as GlCanvas from "./gl-utils/gl-canvas";
+import * as GLCanvas from "./gl-utils/gl-canvas";
 import { gl } from "./gl-utils/gl-canvas";
 import Viewport from "./gl-utils/viewport";
 
@@ -7,46 +7,24 @@ import Parameters from "./parameters";
 
 declare const Button: any;
 declare const Canvas: any;
-declare const Checkbox: any;
-declare const FileControl: any;
-declare const Range: any;
-declare const Tabs: any;
 
 function main() {
-    const glParams = {
-        alpha: false,
-        depth: false,
-        preserveDrawingBuffer: true,
-    };
-    if (!GlCanvas.initGL(glParams)) {
-        return;
-    }
+    initGL();
 
     Canvas.showLoader(true);
 
-    gl.enable(gl.BLEND);
-    gl.clearColor(0, 0, 0, 1);
-    gl.blendEquation(gl.FUNC_ADD);
-    gl.blendFunc(gl.ONE, gl.ONE);
-
     Parameters.scale = 1;
+    Parameters.poles = 3;
+    Parameters.distance = 0.5;
+    Parameters.quality = 0.6;
+    Parameters.speed = 17;
+    Parameters.autorun = true;
 
     let needToAdjustSize = true;
-    Canvas.Observers.canvasResize.push(() => needToAdjustSize = true);
-
-    let autorun: boolean = Checkbox.isChecked("autorun-checkbox-id");
-    Checkbox.addObserver("autorun-checkbox-id", (checked: boolean) => autorun = checked);
-
-    let needToReset: boolean;
-    Button.addObserver("reset-button-id", () => needToReset = true);
-    Range.addObserver("poles-range-id", () => needToReset = true);
-    Range.addObserver("distance-range-id", () => needToReset = true);
-    Range.addObserver("quality-range-id", () => needToReset = true);
-    Parameters.scaleObservers.push(() => needToReset = true);
-    Canvas.Observers.mouseDrag.push(() => needToReset = true);
-
-    let forceUpdate: boolean = false;
-    Button.addObserver("next-button-id", () => forceUpdate = true);
+    let needToReset = true;
+    let forceUpdate = false;
+    let lockedCanvas = false;
+    bindEvents();
 
     const game = new Game();
 
@@ -57,13 +35,72 @@ function main() {
     }
     setTotalPoints(0);
 
-    FileControl.addDownloadObserver("result-download-id", () => {
+    let firstDraw = true;
+    function mainLoop() {
+        if (!lockedCanvas) {
+            if (needToAdjustSize) {
+                GLCanvas.adjustSize(true);
+                Viewport.setFullCanvas(gl);
+                needToAdjustSize = false;
+                needToReset = true;
+            }
+
+            if (needToReset) {
+                gl.clear(gl.COLOR_BUFFER_BIT);
+                setTotalPoints(0);
+                needToReset = false;
+            }
+
+            if (Parameters.autorun || forceUpdate) {
+                const speed = Parameters.speed;
+                const nbPoints = Math.pow(2, speed - 1);
+                game.computeNextPoints(nbPoints);
+                setTotalPoints(totalPoints + nbPoints);
+                game.draw();
+
+                forceUpdate = false;
+
+                if (firstDraw) {
+                    firstDraw = false;
+                    Canvas.showLoader(false);
+                }
+            }
+        }
+
+        requestAnimationFrame(mainLoop);
+    }
+
+    requestAnimationFrame(mainLoop);
+
+    function initGL() {
+        const glParams = {
+            alpha: false,
+            depth: false,
+            preserveDrawingBuffer: true,
+        };
+        if (!GLCanvas.initGL(glParams)) {
+            return;
+        }
+
+        gl.enable(gl.BLEND);
+        gl.clearColor(0, 0, 0, 1);
+        gl.blendEquation(gl.FUNC_ADD);
+        gl.blendFunc(gl.ONE, gl.ONE);
+    }
+
+    function bindEvents() {
+        Canvas.Observers.canvasResize.push(() => needToAdjustSize = true);
+        Parameters.clearObservers.push(() => needToReset = true);
+        Button.addObserver("next-button-id", () => forceUpdate = true);
+        Parameters.downloadObservers.push(drawAndDownloadResult);
+    }
+
+    function drawAndDownloadResult(size: number): void {
         const canvas = Canvas.getCanvas() as HTMLCanvasElement;
+        const nbPointsNeeded = totalPoints * Math.pow(size / canvas.height, 2);
+        lockedCanvas = true;
 
         Canvas.showLoader(true);
-
-        const size = +Tabs.getValues("result-dimensions")[0];
-        const nbPointsNeeded = totalPoints * Math.pow(size / canvas.height, 2);
 
         /* Update CSS to allow the canvas to have the correct size */
         canvas.style.position = "absolute";
@@ -72,7 +109,7 @@ function main() {
         canvas.width = size;
         canvas.height = size;
 
-        GlCanvas.adjustSize();
+        GLCanvas.adjustSize();
         Viewport.setFullCanvas(gl);
 
         gl.clear(gl.COLOR_BUFFER_BIT);
@@ -89,9 +126,10 @@ function main() {
             canvas.style.position = "";
             canvas.style.width = "";
             canvas.style.height = "";
-            needToAdjustSize = true;
             Canvas.showLoader(false);
             Canvas.setLoaderText("");
+            needToAdjustSize = true;
+            lockedCanvas = false;
         }
 
         if ((canvas as any).msToBlob) { // for IE
@@ -108,42 +146,7 @@ function main() {
                 restoreCanvas();
             });
         }
-    });
-
-    let firstDraw = true;
-    function mainLoop() {
-        if (needToAdjustSize) {
-            GlCanvas.adjustSize(true);
-            Viewport.setFullCanvas(gl);
-            needToAdjustSize = false;
-            needToReset = true;
-        }
-
-        if (needToReset) {
-            gl.clear(gl.COLOR_BUFFER_BIT);
-            setTotalPoints(0);
-            needToReset = false;
-        }
-
-        if (autorun || forceUpdate) {
-            const speed = Range.getValue("speed-range-id");
-            const nbPoints = Math.pow(2, speed - 1);
-            game.computeNextPoints(nbPoints);
-            setTotalPoints(totalPoints + nbPoints);
-            game.draw();
-
-            forceUpdate = false;
-
-            if (firstDraw) {
-                firstDraw = false;
-                Canvas.showLoader(false);
-            }
-        }
-
-        requestAnimationFrame(mainLoop);
     }
-
-    requestAnimationFrame(mainLoop);
 }
 
 main();

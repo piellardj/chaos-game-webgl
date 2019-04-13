@@ -135,8 +135,7 @@ var ChaosGame = (function (_super) {
             _this._viewCenter[0] -= 2 * dX * parameters_1.default.scale * aspectRatio;
             _this._viewCenter[1] += 2 * dY * parameters_1.default.scale;
         });
-        Range.addObserver("poles-range-id", function (nb) { return _this.recomputePolesPositions(nb); });
-        _this.recomputePolesPositions(Range.getValue("poles-range-id"));
+        _this.recomputePolesPositions(parameters_1.default.poles);
         _this.computeNextPoints(1);
         _this._shader = null;
         ShaderManager.buildShader({
@@ -174,7 +173,7 @@ var ChaosGame = (function (_super) {
         var shader = this._shader;
         if (shader) {
             shader.a["aCoords"].VBO = this._pointsVBO;
-            shader.u["uAlpha"].value = 1 / (1 + 254 * Range.getValue("quality-range-id"));
+            shader.u["uAlpha"].value = 1 / (1 + 254 * parameters_1.default.quality);
             shader.use();
             shader.bindUniformsAndAttributes();
             gl_canvas_1.gl.drawArrays(gl_canvas_1.gl.POINTS, 0, this._nbPoints);
@@ -211,8 +210,8 @@ var ChaosGame = (function (_super) {
         }
     };
     ChaosGame.prototype.computeXPoints = function (N) {
-        this.recomputePolesPositions(Range.getValue("poles-range-id"));
-        var f = Range.getValue("distance-range-id");
+        this.recomputePolesPositions(parameters_1.default.poles);
+        var f = parameters_1.default.distance;
         var data = new Float32Array(2 * N);
         data[0] = 2 * Math.random() - 1;
         data[1] = 2 * Math.random() - 1;
@@ -858,39 +857,25 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var GlCanvas = __importStar(__webpack_require__(/*! ./gl-utils/gl-canvas */ "./src/ts/gl-utils/gl-canvas.ts"));
+var GLCanvas = __importStar(__webpack_require__(/*! ./gl-utils/gl-canvas */ "./src/ts/gl-utils/gl-canvas.ts"));
 var gl_canvas_1 = __webpack_require__(/*! ./gl-utils/gl-canvas */ "./src/ts/gl-utils/gl-canvas.ts");
 var viewport_1 = __importDefault(__webpack_require__(/*! ./gl-utils/viewport */ "./src/ts/gl-utils/viewport.ts"));
 var chaos_game_1 = __importDefault(__webpack_require__(/*! ./chaos-game */ "./src/ts/chaos-game.ts"));
 var parameters_1 = __importDefault(__webpack_require__(/*! ./parameters */ "./src/ts/parameters.ts"));
 function main() {
-    var glParams = {
-        alpha: false,
-        depth: false,
-        preserveDrawingBuffer: true,
-    };
-    if (!GlCanvas.initGL(glParams)) {
-        return;
-    }
+    initGL();
     Canvas.showLoader(true);
-    gl_canvas_1.gl.enable(gl_canvas_1.gl.BLEND);
-    gl_canvas_1.gl.clearColor(0, 0, 0, 1);
-    gl_canvas_1.gl.blendEquation(gl_canvas_1.gl.FUNC_ADD);
-    gl_canvas_1.gl.blendFunc(gl_canvas_1.gl.ONE, gl_canvas_1.gl.ONE);
     parameters_1.default.scale = 1;
+    parameters_1.default.poles = 3;
+    parameters_1.default.distance = 0.5;
+    parameters_1.default.quality = 0.6;
+    parameters_1.default.speed = 17;
+    parameters_1.default.autorun = true;
     var needToAdjustSize = true;
-    Canvas.Observers.canvasResize.push(function () { return needToAdjustSize = true; });
-    var autorun = Checkbox.isChecked("autorun-checkbox-id");
-    Checkbox.addObserver("autorun-checkbox-id", function (checked) { return autorun = checked; });
-    var needToReset;
-    Button.addObserver("reset-button-id", function () { return needToReset = true; });
-    Range.addObserver("poles-range-id", function () { return needToReset = true; });
-    Range.addObserver("distance-range-id", function () { return needToReset = true; });
-    Range.addObserver("quality-range-id", function () { return needToReset = true; });
-    parameters_1.default.scaleObservers.push(function () { return needToReset = true; });
-    Canvas.Observers.mouseDrag.push(function () { return needToReset = true; });
+    var needToReset = true;
     var forceUpdate = false;
-    Button.addObserver("next-button-id", function () { return forceUpdate = true; });
+    var lockedCanvas = false;
+    bindEvents();
     var game = new chaos_game_1.default();
     var totalPoints;
     function setTotalPoints(total) {
@@ -898,17 +883,67 @@ function main() {
         Canvas.setIndicatorText("Total points", totalPoints.toLocaleString());
     }
     setTotalPoints(0);
-    FileControl.addDownloadObserver("result-download-id", function () {
+    var firstDraw = true;
+    function mainLoop() {
+        if (!lockedCanvas) {
+            if (needToAdjustSize) {
+                GLCanvas.adjustSize(true);
+                viewport_1.default.setFullCanvas(gl_canvas_1.gl);
+                needToAdjustSize = false;
+                needToReset = true;
+            }
+            if (needToReset) {
+                gl_canvas_1.gl.clear(gl_canvas_1.gl.COLOR_BUFFER_BIT);
+                setTotalPoints(0);
+                needToReset = false;
+            }
+            if (parameters_1.default.autorun || forceUpdate) {
+                var speed = parameters_1.default.speed;
+                var nbPoints = Math.pow(2, speed - 1);
+                game.computeNextPoints(nbPoints);
+                setTotalPoints(totalPoints + nbPoints);
+                game.draw();
+                forceUpdate = false;
+                if (firstDraw) {
+                    firstDraw = false;
+                    Canvas.showLoader(false);
+                }
+            }
+        }
+        requestAnimationFrame(mainLoop);
+    }
+    requestAnimationFrame(mainLoop);
+    function initGL() {
+        var glParams = {
+            alpha: false,
+            depth: false,
+            preserveDrawingBuffer: true,
+        };
+        if (!GLCanvas.initGL(glParams)) {
+            return;
+        }
+        gl_canvas_1.gl.enable(gl_canvas_1.gl.BLEND);
+        gl_canvas_1.gl.clearColor(0, 0, 0, 1);
+        gl_canvas_1.gl.blendEquation(gl_canvas_1.gl.FUNC_ADD);
+        gl_canvas_1.gl.blendFunc(gl_canvas_1.gl.ONE, gl_canvas_1.gl.ONE);
+    }
+    function bindEvents() {
+        Canvas.Observers.canvasResize.push(function () { return needToAdjustSize = true; });
+        parameters_1.default.clearObservers.push(function () { return needToReset = true; });
+        Button.addObserver("next-button-id", function () { return forceUpdate = true; });
+        parameters_1.default.downloadObservers.push(drawAndDownloadResult);
+    }
+    function drawAndDownloadResult(size) {
         var canvas = Canvas.getCanvas();
-        Canvas.showLoader(true);
-        var size = +Tabs.getValues("result-dimensions")[0];
         var nbPointsNeeded = totalPoints * Math.pow(size / canvas.height, 2);
+        lockedCanvas = true;
+        Canvas.showLoader(true);
         canvas.style.position = "absolute";
         canvas.style.width = size + "px";
         canvas.style.height = size + "px";
         canvas.width = size;
         canvas.height = size;
-        GlCanvas.adjustSize();
+        GLCanvas.adjustSize();
         viewport_1.default.setFullCanvas(gl_canvas_1.gl);
         gl_canvas_1.gl.clear(gl_canvas_1.gl.COLOR_BUFFER_BIT);
         var nbPoints = 0;
@@ -923,9 +958,10 @@ function main() {
             canvas.style.position = "";
             canvas.style.width = "";
             canvas.style.height = "";
-            needToAdjustSize = true;
             Canvas.showLoader(false);
             Canvas.setLoaderText("");
+            needToAdjustSize = true;
+            lockedCanvas = false;
         }
         if (canvas.msToBlob) {
             var blob = canvas.msToBlob();
@@ -941,35 +977,7 @@ function main() {
                 restoreCanvas();
             });
         }
-    });
-    var firstDraw = true;
-    function mainLoop() {
-        if (needToAdjustSize) {
-            GlCanvas.adjustSize(true);
-            viewport_1.default.setFullCanvas(gl_canvas_1.gl);
-            needToAdjustSize = false;
-            needToReset = true;
-        }
-        if (needToReset) {
-            gl_canvas_1.gl.clear(gl_canvas_1.gl.COLOR_BUFFER_BIT);
-            setTotalPoints(0);
-            needToReset = false;
-        }
-        if (autorun || forceUpdate) {
-            var speed = Range.getValue("speed-range-id");
-            var nbPoints = Math.pow(2, speed - 1);
-            game.computeNextPoints(nbPoints);
-            setTotalPoints(totalPoints + nbPoints);
-            game.draw();
-            forceUpdate = false;
-            if (firstDraw) {
-                firstDraw = false;
-                Canvas.showLoader(false);
-            }
-        }
-        requestAnimationFrame(mainLoop);
     }
-    requestAnimationFrame(mainLoop);
 }
 main();
 
@@ -1004,6 +1012,51 @@ Canvas.Observers.mouseWheel.push(function (delta, zoomCenter) {
     }
 });
 scale = 1.0;
+var POLES_CONTROL_ID = "poles-range-id";
+var poles = Range.getValue(POLES_CONTROL_ID);
+Range.addObserver(POLES_CONTROL_ID, function (p) {
+    poles = p;
+});
+var DISTANCE_CONTROL_ID = "distance-range-id";
+var distance = Range.getValue(DISTANCE_CONTROL_ID);
+Range.addObserver(DISTANCE_CONTROL_ID, function (d) {
+    distance = d;
+});
+var QUALITY_CONTROL_ID = "quality-range-id";
+var quality = Range.getValue(QUALITY_CONTROL_ID);
+Range.addObserver(QUALITY_CONTROL_ID, function (q) {
+    quality = q;
+});
+var SPEED_CONTROL_ID = "speed-range-id";
+var speed = Range.getValue(SPEED_CONTROL_ID);
+Range.addObserver(SPEED_CONTROL_ID, function (s) {
+    speed = s;
+});
+var AUTORUN_CONTROL_ID = "autorun-checkbox-id";
+var autorun = Checkbox.isChecked(AUTORUN_CONTROL_ID);
+Checkbox.addObserver(AUTORUN_CONTROL_ID, function (checked) { return autorun = checked; });
+var downloadObservers = [];
+FileControl.addDownloadObserver("result-download-id", function () {
+    var size = +Tabs.getValues("result-dimensions")[0];
+    for (var _i = 0, downloadObservers_1 = downloadObservers; _i < downloadObservers_1.length; _i++) {
+        var observer = downloadObservers_1[_i];
+        observer(size);
+    }
+});
+var RESET_CONTROL_ID = "reset-button-id";
+var clearObservers = [];
+function callClearObservers() {
+    for (var _i = 0, clearObservers_1 = clearObservers; _i < clearObservers_1.length; _i++) {
+        var observer = clearObservers_1[_i];
+        observer();
+    }
+}
+Range.addObserver(POLES_CONTROL_ID, callClearObservers);
+Range.addObserver(DISTANCE_CONTROL_ID, callClearObservers);
+Range.addObserver(QUALITY_CONTROL_ID, callClearObservers);
+Button.addObserver(RESET_CONTROL_ID, callClearObservers);
+scaleObservers.push(callClearObservers);
+Canvas.Observers.mouseDrag.push(callClearObservers);
 var Parameters = (function () {
     function Parameters() {
     }
@@ -1020,6 +1073,75 @@ var Parameters = (function () {
     Object.defineProperty(Parameters, "scaleObservers", {
         get: function () {
             return scaleObservers;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Parameters, "poles", {
+        get: function () {
+            return poles;
+        },
+        set: function (q) {
+            poles = q;
+            Range.setValue(POLES_CONTROL_ID, poles);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Parameters, "distance", {
+        get: function () {
+            return distance;
+        },
+        set: function (d) {
+            distance = d;
+            Range.setValue(DISTANCE_CONTROL_ID, distance);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Parameters, "quality", {
+        get: function () {
+            return quality;
+        },
+        set: function (d) {
+            quality = d;
+            Range.setValue(QUALITY_CONTROL_ID, quality);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Parameters, "speed", {
+        get: function () {
+            return speed;
+        },
+        set: function (s) {
+            speed = s;
+            Range.setValue(SPEED_CONTROL_ID, speed);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Parameters, "autorun", {
+        get: function () {
+            return autorun;
+        },
+        set: function (a) {
+            autorun = a;
+            Checkbox.setChecked(AUTORUN_CONTROL_ID, a);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Parameters, "downloadObservers", {
+        get: function () {
+            return downloadObservers;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Parameters, "clearObservers", {
+        get: function () {
+            return clearObservers;
         },
         enumerable: true,
         configurable: true

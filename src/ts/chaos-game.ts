@@ -7,7 +7,6 @@ import VBO from "./gl-utils/vbo";
 import Parameters from "./parameters";
 
 declare const Canvas: any;
-declare const Range: any;
 
 class ChaosGame extends GLResource {
     private _shader: Shader;
@@ -33,8 +32,7 @@ class ChaosGame extends GLResource {
             this._viewCenter[1] += 2 * dY * Parameters.scale;
         });
 
-        Range.addObserver("poles-range-id", (nb: number) => this.recomputePolesPositions(nb));
-        this.recomputePolesPositions(Range.getValue("poles-range-id"));
+        this.recomputePolesPositions(Parameters.poles);
 
         this.computeNextPoints(1);
 
@@ -81,7 +79,7 @@ class ChaosGame extends GLResource {
         if (shader) {
             /* tslint:disable:no-string-literal */
             shader.a["aCoords"].VBO = this._pointsVBO;
-            shader.u["uAlpha"].value = 1 / (1 + 254 * Range.getValue("quality-range-id"));
+            shader.u["uAlpha"].value = 1 / (1 + 254 * Parameters.quality);
             /* tslint:enable:no-string-literal */
 
             shader.use();
@@ -130,9 +128,9 @@ class ChaosGame extends GLResource {
     }
 
     private computeXPoints(N: number): Float32Array {
-        this.recomputePolesPositions(Range.getValue("poles-range-id"));
+        this.recomputePolesPositions(Parameters.poles);
 
-        const f = Range.getValue("distance-range-id");
+        const f = Parameters.distance;
         const data = new Float32Array(2 * N);
 
         /* Ignore the first N points because they might not be at the right place */

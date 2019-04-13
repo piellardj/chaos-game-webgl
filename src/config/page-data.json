@@ -73,7 +73,7 @@
                     "step": 0.001
                 },
                 {
-                    "title": "Speed",
+                    "title": "Step size",
                     "type": "range",
                     "id": "speed-range-id",
                     "min": 1,
