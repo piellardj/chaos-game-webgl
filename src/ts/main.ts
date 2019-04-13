@@ -39,20 +39,20 @@ function main() {
     function mainLoop() {
         if (!lockedCanvas) {
             if (needToAdjustSize) {
-                GLCanvas.adjustSize(true);
+                GLCanvas.adjustSize();
                 Viewport.setFullCanvas(gl);
                 needToAdjustSize = false;
                 needToReset = true;
             }
 
-            if (needToReset) {
+            if (needToReset || Parameters.draftMode) {
                 gl.clear(gl.COLOR_BUFFER_BIT);
                 setTotalPoints(0);
                 needToReset = false;
             }
 
-            if (Parameters.autorun || forceUpdate) {
-                const speed = Parameters.speed;
+            if (Parameters.autorun || forceUpdate || Parameters.draftMode) {
+                const speed = Parameters.draftMode ? 17 : Parameters.speed;
                 const nbPoints = Math.pow(2, speed - 1);
                 game.computeNextPoints(nbPoints);
                 setTotalPoints(totalPoints + nbPoints);

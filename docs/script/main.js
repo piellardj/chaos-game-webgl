@@ -887,18 +887,18 @@ function main() {
     function mainLoop() {
         if (!lockedCanvas) {
             if (needToAdjustSize) {
-                GLCanvas.adjustSize(true);
+                GLCanvas.adjustSize();
                 viewport_1.default.setFullCanvas(gl_canvas_1.gl);
                 needToAdjustSize = false;
                 needToReset = true;
             }
-            if (needToReset) {
+            if (needToReset || parameters_1.default.draftMode) {
                 gl_canvas_1.gl.clear(gl_canvas_1.gl.COLOR_BUFFER_BIT);
                 setTotalPoints(0);
                 needToReset = false;
             }
-            if (parameters_1.default.autorun || forceUpdate) {
-                var speed = parameters_1.default.speed;
+            if (parameters_1.default.autorun || forceUpdate || parameters_1.default.draftMode) {
+                var speed = parameters_1.default.draftMode ? 17 : parameters_1.default.speed;
                 var nbPoints = Math.pow(2, speed - 1);
                 game.computeNextPoints(nbPoints);
                 setTotalPoints(totalPoints + nbPoints);
@@ -1057,6 +1057,10 @@ Range.addObserver(QUALITY_CONTROL_ID, callClearObservers);
 Button.addObserver(RESET_CONTROL_ID, callClearObservers);
 scaleObservers.push(callClearObservers);
 Canvas.Observers.mouseDrag.push(callClearObservers);
+Canvas.Observers.mouseUp.push(callClearObservers);
+var draftMode = false;
+Canvas.Observers.mouseDown.push(function () { return draftMode = true; });
+Canvas.Observers.mouseUp.push(function () { return draftMode = false; });
 var Parameters = (function () {
     function Parameters() {
     }
@@ -1101,6 +1105,9 @@ var Parameters = (function () {
     });
     Object.defineProperty(Parameters, "quality", {
         get: function () {
+            if (draftMode) {
+                return 0;
+            }
             return quality;
         },
         set: function (d) {
@@ -1142,6 +1149,13 @@ var Parameters = (function () {
     Object.defineProperty(Parameters, "clearObservers", {
         get: function () {
             return clearObservers;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Parameters, "draftMode", {
+        get: function () {
+            return draftMode;
         },
         enumerable: true,
         configurable: true

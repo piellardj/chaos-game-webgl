@@ -23,7 +23,7 @@
             "title": "Simulation",
             "controls": [
                 {
-                    "title": "Autorun",
+                    "title": "Keep drawing",
                     "type": "checkbox",
                     "id": "autorun-checkbox-id",
                     "checked": true

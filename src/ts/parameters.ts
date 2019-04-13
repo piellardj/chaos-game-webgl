@@ -78,6 +78,11 @@ Range.addObserver(QUALITY_CONTROL_ID, callClearObservers);
 Button.addObserver(RESET_CONTROL_ID, callClearObservers);
 scaleObservers.push(callClearObservers);
 Canvas.Observers.mouseDrag.push(callClearObservers);
+Canvas.Observers.mouseUp.push(callClearObservers);
+
+let draftMode = false;
+Canvas.Observers.mouseDown.push(() => draftMode = true);
+Canvas.Observers.mouseUp.push(() => draftMode = false);
 
 class Parameters {
     public static get scale(): number {
@@ -107,6 +112,9 @@ class Parameters {
     }
 
     public static get quality(): number {
+        if (draftMode) {
+            return 0;
+        }
         return quality;
     }
     public static set quality(d: number) {
@@ -136,6 +144,10 @@ class Parameters {
 
     public static get clearObservers(): ClearObserver[] {
         return clearObservers;
+    }
+
+    public static get draftMode(): boolean {
+        return draftMode;
     }
 
     private constructor() {}
