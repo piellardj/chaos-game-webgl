@@ -1,0 +1,87 @@
+{
+    "title": "Chaos game",
+    "description": "WebGL implementation of the Chaos game.",
+    "introduction": [
+        "...",
+        "..."
+    ],
+    "githubProjectName": "chaos-game-webgl",
+    "additionalLinks": [],
+    "scriptFiles": [
+        "script/main.js"
+    ],
+    "indicators": [
+        "Total points"
+    ],
+    "canvas": {
+        "width": 512,
+        "height": 512,
+        "enableFullscreen": true
+    },
+    "controlsSections": [
+        {
+            "title": "Simulation",
+            "controls": [
+                {
+                    "title": "Autorun",
+                    "type": "checkbox",
+                    "id": "autorun-checkbox-id",
+                    "checked": true
+                },
+                {
+                    "type": "button",
+                    "id": "next-button-id",
+                    "label": "Next step",
+                    "flat": true
+                },
+                {
+                    "type": "button",
+                    "id": "reset-button-id",
+                    "label": "Reset",
+                    "flat": true
+                },
+                {
+                    "title": "Number of poles",
+                    "type": "range",
+                    "id": "poles-range-id",
+                    "min": 3,
+                    "max": 16,
+                    "value": 5,
+                    "step": 1
+                },
+                {
+                    "title": "Distance",
+                    "type": "range",
+                    "id": "distance-range-id",
+                    "min": 0.1,
+                    "max": 2,
+                    "value": 0.5,
+                    "step": 0.001
+                }
+            ]
+        },
+        {
+            "title": "Rendering",
+            "controls": [
+                {
+                    "title": "Quality",
+                    "type": "range",
+                    "id": "quality-range-id",
+                    "min": 0,
+                    "max": 1,
+                    "value": 0.6,
+                    "step": 0.001
+                },
+                {
+                    "title": "Speed",
+                    "type": "range",
+                    "id": "speed-range-id",
+                    "min": 1,
+                    "max": 20,
+                    "value": 15,
+                    "step": 1
+                }
+            ]
+        }
+    ]
+}

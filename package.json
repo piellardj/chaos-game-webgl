@@ -1,0 +1,30 @@
+{
+  "name": "chaos-game-webg",
+  "version": "0.0.1",
+  "description": "WebGL Chaos Game implementation",
+  "main": "build/index.js",
+  "scripts": {
+    "build-page": "node src/generate-page.js",
+    "build-shaders": "node src/build-shaders.js",
+    "build": "npm run build-page && npm run build-shaders && npm run webpack",
+    "clean": "shx rm -rf docs/*",
+    "lint": "tslint -c src/config/tslint.json -p src/config/tsconfig.json",
+    "pre-commit": "npm run lint && npm run rebuild",
+    "rebuild": "npm run clean && npm run build",
+    "webpack": "npm run webpack-dev && npm run webpack-prod",
+    "webpack-dev": "webpack --config src/config/webpack.config.js --mode=development --output docs/script/main.js",
+    "webpack-prod": "webpack --config src/config/webpack.config.js --mode=production --output docs/script/main.min.js"
+  },
+  "author": "“Jérémie PIELLARD <jeremie.piellard@gmail.com> (https://github.com/piellardj)",
+  "license": "ISC",
+  "devDependencies": {
+    "fs-extra": "^7.0.1",
+    "shx": "^0.3.2",
+    "ts-loader": "^5.3.3",
+    "tslint": "^5.15.0",
+    "typescript": "^3.4.3",
+    "webpack": "^4.29.6",
+    "webpack-cli": "^3.3.0",
+    "webpage-templates": "github:piellardj/webpage-templates"
+  }
+}
