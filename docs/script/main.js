@@ -928,6 +928,7 @@ function main() {
     function initGL() {
         var glParams = {
             alpha: false,
+            antialias: false,
             depth: false,
             preserveDrawingBuffer: true,
         };

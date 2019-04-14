@@ -75,6 +75,7 @@ function main() {
     function initGL() {
         const glParams = {
             alpha: false,
+            antialias: false,
             depth: false,
             preserveDrawingBuffer: true,
         };
