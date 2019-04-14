@@ -210,18 +210,30 @@ var ChaosGame = (function (_super) {
         }
     };
     ChaosGame.prototype.computeXPoints = function (N) {
+        var _this = this;
+        var chooseAnyPole = function () { return 2 * Math.floor(_this._nbPoles * Math.random()); };
+        var previousPole = -1;
+        var chooseDifferentPole = function () {
+            var pole;
+            do {
+                pole = 2 * Math.floor(_this._nbPoles * Math.random());
+            } while (pole === previousPole);
+            previousPole = pole;
+            return pole;
+        };
+        var choosePole = parameters_1.default.forbidRepeat ? chooseDifferentPole : chooseAnyPole;
         this.recomputePolesPositions(parameters_1.default.poles);
         var f = parameters_1.default.distance;
         var data = new Float32Array(2 * N);
         data[0] = 2 * Math.random() - 1;
         data[1] = 2 * Math.random() - 1;
         for (var i = 0; i < 500; ++i) {
-            var pole = 2 * Math.floor(this._nbPoles * Math.random());
+            var pole = choosePole();
             data[0] += f * (this._poles[pole + 0] - data[0]);
             data[1] += f * (this._poles[pole + 1] - data[1]);
         }
         for (var iP = 1; iP < N; ++iP) {
-            var pole = 2 * Math.floor(this._nbPoles * Math.random());
+            var pole = choosePole();
             var curr = 2 * iP;
             var prev = 2 * (iP - 1);
             data[curr + 0] = data[prev + 0] + f * (this._poles[pole + 0] - data[prev + 0]);
@@ -995,7 +1007,7 @@ main();
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var scale;
-var MIN_SCALE = 0.25;
+var MIN_SCALE = 0.05;
 var MAX_SCALE = 4.0;
 var scaleObservers = [];
 Canvas.Observers.mouseWheel.push(function (delta, zoomCenter) {
@@ -1035,6 +1047,9 @@ Range.addObserver(SPEED_CONTROL_ID, function (s) {
 var AUTORUN_CONTROL_ID = "autorun-checkbox-id";
 var autorun = Checkbox.isChecked(AUTORUN_CONTROL_ID);
 Checkbox.addObserver(AUTORUN_CONTROL_ID, function (checked) { return autorun = checked; });
+var FORBID_REPEAT_CONTROL_ID = "forbid-repeat-checkbox-id";
+var forbidRepeat = Checkbox.isChecked(FORBID_REPEAT_CONTROL_ID);
+Checkbox.addObserver(FORBID_REPEAT_CONTROL_ID, function (checked) { return forbidRepeat = checked; });
 var downloadObservers = [];
 FileControl.addDownloadObserver("result-download-id", function () {
     var size = +Tabs.getValues("result-dimensions")[0];
@@ -1055,6 +1070,7 @@ Range.addObserver(POLES_CONTROL_ID, callClearObservers);
 Range.addObserver(DISTANCE_CONTROL_ID, callClearObservers);
 Range.addObserver(QUALITY_CONTROL_ID, callClearObservers);
 Button.addObserver(RESET_CONTROL_ID, callClearObservers);
+Checkbox.addObserver(FORBID_REPEAT_CONTROL_ID, callClearObservers);
 scaleObservers.push(callClearObservers);
 Canvas.Observers.mouseDrag.push(callClearObservers);
 Canvas.Observers.mouseUp.push(callClearObservers);
@@ -1088,6 +1104,17 @@ var Parameters = (function () {
         set: function (q) {
             poles = q;
             Range.setValue(POLES_CONTROL_ID, poles);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Parameters, "forbidRepeat", {
+        get: function () {
+            return forbidRepeat;
+        },
+        set: function (f) {
+            forbidRepeat = f;
+            Checkbox.setChecked(FORBID_REPEAT_CONTROL_ID, forbidRepeat);
         },
         enumerable: true,
         configurable: true

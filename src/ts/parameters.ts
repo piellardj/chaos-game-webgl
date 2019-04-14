@@ -6,7 +6,7 @@ declare const Range: any;
 declare const Tabs: any;
 
 let scale: number;
-const MIN_SCALE = 0.25;
+const MIN_SCALE = 0.05;
 const MAX_SCALE = 4.0;
 type ScaleObserver = (newScale: number, zoomCenter: number[]) => void;
 const scaleObservers: ScaleObserver[] = [];
@@ -55,6 +55,10 @@ const AUTORUN_CONTROL_ID = "autorun-checkbox-id";
 let autorun: boolean = Checkbox.isChecked(AUTORUN_CONTROL_ID);
 Checkbox.addObserver(AUTORUN_CONTROL_ID, (checked: boolean) => autorun = checked);
 
+const FORBID_REPEAT_CONTROL_ID = "forbid-repeat-checkbox-id";
+let forbidRepeat: boolean = Checkbox.isChecked(FORBID_REPEAT_CONTROL_ID);
+Checkbox.addObserver(FORBID_REPEAT_CONTROL_ID, (checked: boolean) => forbidRepeat = checked);
+
 type DownloadObserver = (size: number) => void;
 const downloadObservers: DownloadObserver[] = [];
 FileControl.addDownloadObserver("result-download-id", () => {
@@ -76,6 +80,7 @@ Range.addObserver(POLES_CONTROL_ID, callClearObservers);
 Range.addObserver(DISTANCE_CONTROL_ID, callClearObservers);
 Range.addObserver(QUALITY_CONTROL_ID, callClearObservers);
 Button.addObserver(RESET_CONTROL_ID, callClearObservers);
+Checkbox.addObserver(FORBID_REPEAT_CONTROL_ID, callClearObservers);
 scaleObservers.push(callClearObservers);
 Canvas.Observers.mouseDrag.push(callClearObservers);
 Canvas.Observers.mouseUp.push(callClearObservers);
@@ -101,6 +106,14 @@ class Parameters {
     public static set poles(q: number) {
         poles = q;
         Range.setValue(POLES_CONTROL_ID, poles);
+    }
+
+    public static get forbidRepeat(): boolean {
+        return forbidRepeat;
+    }
+    public static set forbidRepeat(f: boolean) {
+        forbidRepeat = f;
+        Checkbox.setChecked(FORBID_REPEAT_CONTROL_ID, forbidRepeat);
     }
 
     public static get distance(): number {

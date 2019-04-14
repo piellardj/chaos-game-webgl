@@ -128,6 +128,20 @@ class ChaosGame extends GLResource {
     }
 
     private computeXPoints(N: number): Float32Array {
+        const chooseAnyPole = () => 2 * Math.floor(this._nbPoles * Math.random());
+
+        let previousPole = -1;
+        const chooseDifferentPole = () => {
+            let pole;
+            do {
+                pole = 2 * Math.floor(this._nbPoles * Math.random());
+            } while (pole === previousPole);
+            previousPole = pole;
+            return pole;
+        };
+
+        const choosePole = Parameters.forbidRepeat ? chooseDifferentPole : chooseAnyPole;
+
         this.recomputePolesPositions(Parameters.poles);
 
         const f = Parameters.distance;
@@ -137,13 +151,13 @@ class ChaosGame extends GLResource {
         data[0] = 2 * Math.random() - 1;
         data[1] = 2 * Math.random() - 1;
         for (let i = 0; i < 500; ++i) {
-            const pole = 2 * Math.floor(this._nbPoles * Math.random());
+            const pole = choosePole();
             data[0] += f * (this._poles[pole + 0] - data[0]);
             data[1] += f * (this._poles[pole + 1] - data[1]);
         }
 
         for (let iP = 1; iP < N; ++iP) {
-            const pole = 2 * Math.floor(this._nbPoles * Math.random());
+            const pole = choosePole();
             const curr = 2 * iP;
             const prev = 2 * (iP - 1);
             data[curr + 0] = data[prev + 0] + f * (this._poles[pole + 0] - data[prev + 0]);

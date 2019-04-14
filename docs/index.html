@@ -66,13 +66,35 @@
                 </div>
               </div>
               <div class="control">
+                <label>Quality:</label>
+                <div class="range">
+                  <input type="range" min="0" max="1" value="0.6" step="0.001" class="slider" id="quality-range-id">
+                  <span class="tooltip"></span>
+                </div>
+              </div>
+              <div class="control">
+                <label>Step size:</label>
+                <div class="range">
+                  <input type="range" min="1" max="20" value="15" step="1" class="slider" id="speed-range-id">
+                  <span class="tooltip"></span>
+                </div>
+              </div>
+              <div class="control">
                 <button class="button  flat" id="next-button-id">Next step</button>
               </div>
               <div class="control">
-                <button class="button  flat" id="reset-button-id">Reset</button>
+                <button class="button  flat" id="reset-button-id">Clear</button>
               </div>
+            </div>
+          </section>
+          <hr />
+
+          <section class="controls-section">
+            <h2>Rules</h2>
+
+            <div class="controls-list">
               <div class="control">
-                <label>Number of poles:</label>
+                <label>Attractors:</label>
                 <div class="range">
                   <input type="range" min="3" max="16" value="5" step="1" class="slider" id="poles-range-id">
                   <span class="tooltip"></span>
@@ -85,26 +107,11 @@
                   <span class="tooltip"></span>
                 </div>
               </div>
-            </div>
-          </section>
-          <hr />
-
-          <section class="controls-section">
-            <h2>Rendering</h2>
-
-            <div class="controls-list">
               <div class="control">
-                <label>Quality:</label>
-                <div class="range">
-                  <input type="range" min="0" max="1" value="0.6" step="0.001" class="slider" id="quality-range-id">
-                  <span class="tooltip"></span>
-                </div>
-              </div>
-              <div class="control">
-                <label>Step size:</label>
-                <div class="range">
-                  <input type="range" min="1" max="20" value="15" step="1" class="slider" id="speed-range-id">
-                  <span class="tooltip"></span>
+                <label>Forbid repeat:</label>
+                <div class="checkbox">
+                  <input type="checkbox" id="forbid-repeat-checkbox-id">
+                  <label for="forbid-repeat-checkbox-id" class="checkmark"></label>
                 </div>
               </div>
             </div>
