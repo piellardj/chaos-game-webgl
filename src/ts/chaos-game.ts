@@ -101,40 +101,29 @@ class ChaosGame extends GLResource {
         }
     }
 
-    private recomputePolesPositions(nbPoles: number): number[] {
+    private recomputePolesPositions(nbPoles: number): Float32Array {
         const canvas = Canvas.getSize();
         const aspectRatio = canvas[0] / canvas[1];
-        const toNormalizedCoords = (point: number[]) => {
-            return [
-                ((point[0] - this._viewCenter[0]) / (Parameters.scale * aspectRatio)),
-                ((point[1] - this._viewCenter[1]) / Parameters.scale),
-            ];
-        };
+        const absoluteToViewport = (point: number[]) => [
+            ((point[0] - this._viewCenter[0]) / (Parameters.scale * aspectRatio)),
+            ((point[1] - this._viewCenter[1]) / Parameters.scale),
+        ];
 
-        const poles = new Array<number>(2 * nbPoles);
+        const poles = new Float32Array(2 * nbPoles);
 
-        const dAngle = 2 * Math.PI / nbPoles;
-        const startingAngle = (nbPoles % 2 !== 0) ? dAngle / 4 : dAngle / 2;
+        const dAngle = -2 * Math.PI / nbPoles;
+        const startingAngle = Math.PI / 2 + ((nbPoles + 1) % 2) * dAngle / 2;
 
-        let minY = 0;
-        let maxY = 0;
+        /* May need to shift vertically in order to center the figure. */
+        const centerY = 0.5 * (Math.sin(startingAngle) + Math.sin(startingAngle + Math.floor(nbPoles/2) * dAngle));
+
         for (let i = 0; i < nbPoles; ++i) {
             const angle = startingAngle + i * dAngle;
 
-            poles[2 * i + 0] = Math.cos(angle);
-            poles[2 * i + 1] = Math.sin(angle);
-
-            minY = Math.min(minY, poles[2 * i + 1]);
-            maxY = Math.max(maxY, poles[2 * i + 1]);
-        }
-        const centerY = 0.5 * (maxY + minY);
-
-        for (let i = 0; i < nbPoles; ++i) {
-            const localCoords = toNormalizedCoords(
-                [poles[2 * i + 0], poles[2 * i + 1] - centerY]);
-
-            poles[2 * i + 0] = localCoords[0];
-            poles[2 * i + 1] = localCoords[1];
+            const absolute = [Math.cos(angle), Math.sin(angle) - centerY];
+            const relative = absoluteToViewport(absolute);
+            poles[2 * i + 0] = relative[0];
+            poles[2 * i + 1] = relative[1];
         }
 
         return poles;
@@ -159,7 +148,7 @@ class ChaosGame extends GLResource {
 
         const choosePole = Parameters.forbidRepeat ? chooseDifferentPole : chooseAnyPole;
 
-        const poles = this.recomputePolesPositions(nbPoles);
+        const poles: Float32Array = this.recomputePolesPositions(nbPoles);
 
         const f = Parameters.distance;
 

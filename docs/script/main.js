@@ -190,29 +190,20 @@ var ChaosGame = (function (_super) {
         var _this = this;
         var canvas = Canvas.getSize();
         var aspectRatio = canvas[0] / canvas[1];
-        var toNormalizedCoords = function (point) {
-            return [
-                ((point[0] - _this._viewCenter[0]) / (parameters_1.default.scale * aspectRatio)),
-                ((point[1] - _this._viewCenter[1]) / parameters_1.default.scale),
-            ];
-        };
-        var poles = new Array(2 * nbPoles);
-        var dAngle = 2 * Math.PI / nbPoles;
-        var startingAngle = (nbPoles % 2 !== 0) ? dAngle / 4 : dAngle / 2;
-        var minY = 0;
-        var maxY = 0;
+        var absoluteToViewport = function (point) { return [
+            ((point[0] - _this._viewCenter[0]) / (parameters_1.default.scale * aspectRatio)),
+            ((point[1] - _this._viewCenter[1]) / parameters_1.default.scale),
+        ]; };
+        var poles = new Float32Array(2 * nbPoles);
+        var dAngle = -2 * Math.PI / nbPoles;
+        var startingAngle = Math.PI / 2 + ((nbPoles + 1) % 2) * dAngle / 2;
+        var centerY = 0.5 * (Math.sin(startingAngle) + Math.sin(startingAngle + Math.floor(nbPoles / 2) * dAngle));
         for (var i = 0; i < nbPoles; ++i) {
             var angle = startingAngle + i * dAngle;
-            poles[2 * i + 0] = Math.cos(angle);
-            poles[2 * i + 1] = Math.sin(angle);
-            minY = Math.min(minY, poles[2 * i + 1]);
-            maxY = Math.max(maxY, poles[2 * i + 1]);
-        }
-        var centerY = 0.5 * (maxY + minY);
-        for (var i = 0; i < nbPoles; ++i) {
-            var localCoords = toNormalizedCoords([poles[2 * i + 0], poles[2 * i + 1] - centerY]);
-            poles[2 * i + 0] = localCoords[0];
-            poles[2 * i + 1] = localCoords[1];
+            var absolute = [Math.cos(angle), Math.sin(angle) - centerY];
+            var relative = absoluteToViewport(absolute);
+            poles[2 * i + 0] = relative[0];
+            poles[2 * i + 1] = relative[1];
         }
         return poles;
     };
