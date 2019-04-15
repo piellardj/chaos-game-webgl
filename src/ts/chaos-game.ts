@@ -9,15 +9,15 @@ import Parameters from "./parameters";
 
 declare const Canvas: any;
 
-type PointsSet = {
-    color: number[],
-    from: number,
-    size: number,
-};
+interface IPointsSet {
+    color: number[];
+    from: number;
+    size: number;
+}
 
-type PointsSets = {
-    data: Float32Array,
-    sets: PointsSet[],
+interface IPointsSets {
+    data: Float32Array;
+    sets: IPointsSet[];
 }
 
 class ChaosGame extends GLResource {
@@ -87,7 +87,7 @@ class ChaosGame extends GLResource {
             shader.use();
             shader.bindAttributes();
 
-            const strength = 1 / (1 + 254 * Parameters.quality);                    
+            const strength = 1 / (1 + 254 * Parameters.quality);
             for (const pointsSet of pointsSets.sets) {
                 shader.u["uColor"].value = [
                     pointsSet.color[0] * strength,
@@ -115,7 +115,7 @@ class ChaosGame extends GLResource {
         const startingAngle = Math.PI / 2 + ((nbPoles + 1) % 2) * dAngle / 2;
 
         /* May need to shift vertically in order to center the figure. */
-        const centerY = 0.5 * (Math.sin(startingAngle) + Math.sin(startingAngle + Math.floor(nbPoles/2) * dAngle));
+        const centerY = 0.5 * (Math.sin(startingAngle) + Math.sin(startingAngle + Math.floor(nbPoles / 2) * dAngle));
 
         for (let i = 0; i < nbPoles; ++i) {
             const angle = startingAngle + i * dAngle;
@@ -129,7 +129,7 @@ class ChaosGame extends GLResource {
         return poles;
     }
 
-    private computeXPoints(N: number): PointsSets {
+    private computeXPoints(N: number): IPointsSets {
         const nbPoles = Parameters.poles;
 
         const chooseAnyPole = () => {
@@ -168,7 +168,7 @@ class ChaosGame extends GLResource {
 
         const data = new Float32Array(2 * N);
         const result = {
-            data: data,
+            data,
             sets: [],
         };
 

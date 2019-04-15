@@ -58,7 +58,7 @@ const presets: IPreset[] = [
         poles: 4,
         distance: 0.4,
         forbidRepeat: true,
-        scale: 0.8
+        scale: 0.8,
     },
     {
         poles: 4,
@@ -89,7 +89,7 @@ const presets: IPreset[] = [
         distance: 0.667,
         forbidRepeat: false,
         scale: 0.65,
-    }
+    },
 ];
 
 function getPreset(id: number): IPreset {
