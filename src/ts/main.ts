@@ -16,6 +16,7 @@ function main() {
     Parameters.quality = 0.6;
     Parameters.speed = 17;
     Parameters.autorun = true;
+    Parameters.colors = false;
     Parameters.preset = 7;
 
     let needToAdjustSize = true;
@@ -52,9 +53,8 @@ function main() {
             if (Parameters.autorun || forceUpdate || Parameters.draftMode) {
                 const speed = Parameters.draftMode ? 17 : Parameters.speed;
                 const nbPoints = Math.pow(2, speed - 1);
-                game.computeNextPoints(nbPoints);
                 setTotalPoints(totalPoints + nbPoints);
-                game.draw();
+                game.draw(nbPoints);
 
                 forceUpdate = false;
 
@@ -113,11 +113,10 @@ function main() {
 
         gl.clear(gl.COLOR_BUFFER_BIT);
         let nbPoints = 0;
-        const step = 524288;
+        const pointsPerStep = 524288;
         while (nbPoints < nbPointsNeeded) {
-            nbPoints += step;
-            game.computeNextPoints(step);
-            game.draw();
+            nbPoints += pointsPerStep;
+            game.draw(pointsPerStep);
             Canvas.setLoaderText(Math.floor(100 * nbPoints / nbPointsNeeded) + " %");
         }
 

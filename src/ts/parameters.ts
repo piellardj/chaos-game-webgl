@@ -57,6 +57,12 @@ Checkbox.addObserver(AUTORUN_CONTROL_ID, (checked: boolean) => {
     autorun = checked;
 });
 
+const COLORS_CONTROL_ID = "colors-checkbox-id";
+let colors: boolean = Checkbox.isChecked(COLORS_CONTROL_ID);
+Checkbox.addObserver(COLORS_CONTROL_ID, (checked: boolean) => {
+    colors = checked;
+});
+
 const FORBID_REPEAT_CONTROL_ID = "forbid-repeat-checkbox-id";
 let forbidRepeat: boolean = Checkbox.isChecked(FORBID_REPEAT_CONTROL_ID);
 Checkbox.addObserver(FORBID_REPEAT_CONTROL_ID, (checked: boolean) => {
@@ -86,6 +92,7 @@ Range.addObserver(DISTANCE_CONTROL_ID, callClearObservers);
 Range.addObserver(QUALITY_CONTROL_ID, callClearObservers);
 Button.addObserver(RESET_CONTROL_ID, callClearObservers);
 Checkbox.addObserver(FORBID_REPEAT_CONTROL_ID, callClearObservers);
+Checkbox.addObserver(COLORS_CONTROL_ID, callClearObservers);
 scaleObservers.push(callClearObservers);
 Canvas.Observers.mouseDrag.push(callClearObservers);
 Canvas.Observers.mouseUp.push(callClearObservers);
@@ -174,6 +181,14 @@ class Parameters {
     public static set quality(d: number) {
         quality = d;
         Range.setValue(QUALITY_CONTROL_ID, quality);
+    }
+
+    public static get colors(): boolean {
+        return colors;
+    }
+    public static set colors(c: boolean) {
+        colors = c;
+        Checkbox.setChecked(COLORS_CONTROL_ID, c);
     }
 
     public static get speed(): number {

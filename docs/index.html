@@ -55,7 +55,7 @@
         <div class="controls-block">
 
           <section class="controls-section">
-            <h2>Simulation</h2>
+            <h2>Rendering</h2>
 
             <div class="controls-list">
               <div class="control">
@@ -66,11 +66,10 @@
                 </div>
               </div>
               <div class="control">
-                <label>Quality:</label>
-                <div class="range">
-                  <input type="range" min="0" max="1" value="0.6" step="0.1" class="slider" id="quality-range-id">
-                  <span class="tooltip"></span>
-                </div>
+                <button class="button  flat" id="next-button-id">Next step</button>
+              </div>
+              <div class="control">
+                <button class="button  flat" id="reset-button-id">Clear</button>
               </div>
               <div class="control">
                 <label>Step size:</label>
@@ -80,10 +79,18 @@
                 </div>
               </div>
               <div class="control">
-                <button class="button  flat" id="next-button-id">Next step</button>
+                <label>Quality:</label>
+                <div class="range">
+                  <input type="range" min="0" max="1" value="0.6" step="0.1" class="slider" id="quality-range-id">
+                  <span class="tooltip"></span>
+                </div>
               </div>
               <div class="control">
-                <button class="button  flat" id="reset-button-id">Clear</button>
+                <label>Rainbow:</label>
+                <div class="checkbox">
+                  <input type="checkbox" id="colors-checkbox-id">
+                  <label for="colors-checkbox-id" class="checkmark"></label>
+                </div>
               </div>
             </div>
           </section>
@@ -194,7 +201,7 @@
         </a>
       </div>
     </footer>
-    <script src="script/page.js"></script>
+    <script src="script/page.min.js"></script>
     <script src="script/main.js"></script>
   </body>
 

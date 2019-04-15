@@ -123,11 +123,14 @@ var gl_canvas_1 = __webpack_require__(/*! ./gl-utils/gl-canvas */ "./src/ts/gl-u
 var gl_resource_1 = __importDefault(__webpack_require__(/*! ./gl-utils/gl-resource */ "./src/ts/gl-utils/gl-resource.ts"));
 var ShaderManager = __importStar(__webpack_require__(/*! ./gl-utils/shader-manager */ "./src/ts/gl-utils/shader-manager.ts"));
 var vbo_1 = __importDefault(__webpack_require__(/*! ./gl-utils/vbo */ "./src/ts/gl-utils/vbo.ts"));
+var colors_1 = __importDefault(__webpack_require__(/*! ./colors */ "./src/ts/colors.ts"));
 var parameters_1 = __importDefault(__webpack_require__(/*! ./parameters */ "./src/ts/parameters.ts"));
 var ChaosGame = (function (_super) {
     __extends(ChaosGame, _super);
     function ChaosGame() {
         var _this = _super.call(this, gl_canvas_1.gl) || this;
+        var fillData = new Float32Array(2);
+        _this._pointsVBO = new vbo_1.default(gl_canvas_1.gl, fillData, 2, gl_canvas_1.gl.FLOAT, false);
         _this._viewCenter = [0, 0];
         Canvas.Observers.mouseDrag.push(function (dX, dY) {
             var canvasSize = Canvas.getSize();
@@ -139,7 +142,6 @@ var ChaosGame = (function (_super) {
             _this._viewCenter = [0, 0];
         });
         _this.recomputePolesPositions(parameters_1.default.poles);
-        _this.computeNextPoints(1);
         _this._shader = null;
         ShaderManager.buildShader({
             fragmentFilename: "points.frag",
@@ -162,24 +164,26 @@ var ChaosGame = (function (_super) {
             this._shader = null;
         }
     };
-    ChaosGame.prototype.computeNextPoints = function (number) {
-        this._nbPoints = number;
-        var data = this.computeXPoints(this._nbPoints);
-        if (this._pointsVBO) {
-            this._pointsVBO.setData(data);
-        }
-        else {
-            this._pointsVBO = new vbo_1.default(gl_canvas_1.gl, data, 2, gl_canvas_1.gl.FLOAT, false);
-        }
-    };
-    ChaosGame.prototype.draw = function () {
+    ChaosGame.prototype.draw = function (nbPoints) {
         var shader = this._shader;
         if (shader) {
+            var pointsSets = this.computeXPoints(nbPoints);
+            this._pointsVBO.setData(pointsSets.data);
             shader.a["aCoords"].VBO = this._pointsVBO;
-            shader.u["uAlpha"].value = 1 / (1 + 254 * parameters_1.default.quality);
             shader.use();
-            shader.bindUniformsAndAttributes();
-            gl_canvas_1.gl.drawArrays(gl_canvas_1.gl.POINTS, 0, this._nbPoints);
+            shader.bindAttributes();
+            var strength = 1 / (1 + 254 * parameters_1.default.quality);
+            for (var _i = 0, _a = pointsSets.sets; _i < _a.length; _i++) {
+                var pointsSet = _a[_i];
+                shader.u["uColor"].value = [
+                    pointsSet.color[0] * strength,
+                    pointsSet.color[1] * strength,
+                    pointsSet.color[2] * strength,
+                    1
+                ];
+                shader.bindUniforms();
+                gl_canvas_1.gl.drawArrays(gl_canvas_1.gl.POINTS, pointsSet.from, pointsSet.size);
+            }
         }
     };
     ChaosGame.prototype.recomputePolesPositions = function (nbPoles) {
@@ -192,60 +196,141 @@ var ChaosGame = (function (_super) {
                 ((point[1] - _this._viewCenter[1]) / parameters_1.default.scale),
             ];
         };
-        this._poles = new Array(2 * nbPoles);
+        var poles = new Array(2 * nbPoles);
         var dAngle = 2 * Math.PI / nbPoles;
         var startingAngle = (nbPoles % 2 !== 0) ? dAngle / 4 : dAngle / 2;
         var minY = 0;
         var maxY = 0;
         for (var i = 0; i < nbPoles; ++i) {
             var angle = startingAngle + i * dAngle;
-            this._poles[2 * i + 0] = Math.cos(angle);
-            this._poles[2 * i + 1] = Math.sin(angle);
-            minY = Math.min(minY, this._poles[2 * i + 1]);
-            maxY = Math.max(maxY, this._poles[2 * i + 1]);
+            poles[2 * i + 0] = Math.cos(angle);
+            poles[2 * i + 1] = Math.sin(angle);
+            minY = Math.min(minY, poles[2 * i + 1]);
+            maxY = Math.max(maxY, poles[2 * i + 1]);
         }
         var centerY = 0.5 * (maxY + minY);
         for (var i = 0; i < nbPoles; ++i) {
-            var localCoords = toNormalizedCoords([this._poles[2 * i + 0], this._poles[2 * i + 1] - centerY]);
-            this._poles[2 * i + 0] = localCoords[0];
-            this._poles[2 * i + 1] = localCoords[1];
+            var localCoords = toNormalizedCoords([poles[2 * i + 0], poles[2 * i + 1] - centerY]);
+            poles[2 * i + 0] = localCoords[0];
+            poles[2 * i + 1] = localCoords[1];
         }
+        return poles;
     };
     ChaosGame.prototype.computeXPoints = function (N) {
-        var nbPoles = this._poles.length / 2;
-        var chooseAnyPole = function () { return 2 * Math.floor(nbPoles * Math.random()); };
+        var nbPoles = parameters_1.default.poles;
+        var chooseAnyPole = function () {
+            return Math.floor(nbPoles * Math.random());
+        };
         var previousPole = -1;
         var chooseDifferentPole = function () {
             var pole;
             do {
-                pole = 2 * Math.floor(nbPoles * Math.random());
+                pole = chooseAnyPole();
             } while (pole === previousPole);
             previousPole = pole;
             return pole;
         };
         var choosePole = parameters_1.default.forbidRepeat ? chooseDifferentPole : chooseAnyPole;
-        this.recomputePolesPositions(parameters_1.default.poles);
+        var poles = this.recomputePolesPositions(nbPoles);
         var f = parameters_1.default.distance;
-        var data = new Float32Array(2 * N);
-        data[0] = 2 * Math.random() - 1;
-        data[1] = 2 * Math.random() - 1;
+        var pos = [2 * Math.random() - 1, 2 * Math.random() - 1];
+        function nextPos() {
+            var pole = choosePole();
+            pos[0] += f * (poles[2 * pole + 0] - pos[0]);
+            pos[1] += f * (poles[2 * pole + 1] - pos[1]);
+            return pole;
+        }
         for (var i = 0; i < 500; ++i) {
-            var pole = choosePole();
-            data[0] += f * (this._poles[pole + 0] - data[0]);
-            data[1] += f * (this._poles[pole + 1] - data[1]);
+            nextPos();
         }
-        for (var iP = 1; iP < N; ++iP) {
-            var pole = choosePole();
-            var curr = 2 * iP;
-            var prev = 2 * (iP - 1);
-            data[curr + 0] = data[prev + 0] + f * (this._poles[pole + 0] - data[prev + 0]);
-            data[curr + 1] = data[prev + 1] + f * (this._poles[pole + 1] - data[prev + 1]);
+        var data = new Float32Array(2 * N);
+        var result = {
+            data: data,
+            sets: [],
+        };
+        if (parameters_1.default.colors) {
+            var maxSizePerPole = Math.floor(N / nbPoles);
+            for (var i = 0; i < nbPoles; ++i) {
+                result.sets.push({
+                    color: colors_1.default(i / nbPoles),
+                    from: i * maxSizePerPole,
+                    size: 0,
+                });
+            }
+            for (var iP = 0; iP < N; ++iP) {
+                var pole = nextPos();
+                if (result.sets[pole].size + 1 < maxSizePerPole) {
+                    var index = 2 * (result.sets[pole].from + result.sets[pole].size);
+                    result.data[index + 0] = pos[0];
+                    result.data[index + 1] = pos[1];
+                    result.sets[pole].size++;
+                }
+            }
         }
-        return data;
+        else {
+            result.sets.push({
+                color: [1, 1, 1],
+                from: 0,
+                size: N,
+            });
+            for (var iP = 0; iP < N; ++iP) {
+                nextPos();
+                var curr = 2 * iP;
+                result.data[curr + 0] = pos[0];
+                result.data[curr + 1] = pos[1];
+            }
+        }
+        return result;
     };
     return ChaosGame;
 }(gl_resource_1.default));
 exports.default = ChaosGame;
+
+
+/***/ }),
+
+/***/ "./src/ts/colors.ts":
+/*!**************************!*\
+  !*** ./src/ts/colors.ts ***!
+  \**************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+function ColorFromHue(hue) {
+    var r = 0;
+    var g = 0;
+    var b = 0;
+    hue = (hue % 1) * 6;
+    if (hue < 1) {
+        r = 1;
+        g = hue;
+    }
+    else if (hue < 2) {
+        r = 2 - hue;
+        g = 1;
+    }
+    else if (hue < 3) {
+        g = 1;
+        b = hue - 2;
+    }
+    else if (hue < 4) {
+        g = 4 - hue;
+        b = 1;
+    }
+    else if (hue < 5) {
+        r = hue - 4;
+        b = 1;
+    }
+    else if (hue < 6) {
+        r = 1;
+        b = 6 - hue;
+    }
+    return [r, g, b];
+}
+exports.default = ColorFromHue;
 
 
 /***/ }),
@@ -882,6 +967,7 @@ function main() {
     parameters_1.default.quality = 0.6;
     parameters_1.default.speed = 17;
     parameters_1.default.autorun = true;
+    parameters_1.default.colors = false;
     parameters_1.default.preset = 7;
     var needToAdjustSize = true;
     var needToReset = true;
@@ -912,9 +998,8 @@ function main() {
             if (parameters_1.default.autorun || forceUpdate || parameters_1.default.draftMode) {
                 var speed = parameters_1.default.draftMode ? 17 : parameters_1.default.speed;
                 var nbPoints = Math.pow(2, speed - 1);
-                game.computeNextPoints(nbPoints);
                 setTotalPoints(totalPoints + nbPoints);
-                game.draw();
+                game.draw(nbPoints);
                 forceUpdate = false;
                 if (firstDraw) {
                     firstDraw = false;
@@ -960,11 +1045,10 @@ function main() {
         viewport_1.default.setFullCanvas(gl_canvas_1.gl);
         gl_canvas_1.gl.clear(gl_canvas_1.gl.COLOR_BUFFER_BIT);
         var nbPoints = 0;
-        var step = 524288;
+        var pointsPerStep = 524288;
         while (nbPoints < nbPointsNeeded) {
-            nbPoints += step;
-            game.computeNextPoints(step);
-            game.draw();
+            nbPoints += pointsPerStep;
+            game.draw(pointsPerStep);
             Canvas.setLoaderText(Math.floor(100 * nbPoints / nbPointsNeeded) + " %");
         }
         function restoreCanvas() {
@@ -1056,6 +1140,11 @@ var autorun = Checkbox.isChecked(AUTORUN_CONTROL_ID);
 Checkbox.addObserver(AUTORUN_CONTROL_ID, function (checked) {
     autorun = checked;
 });
+var COLORS_CONTROL_ID = "colors-checkbox-id";
+var colors = Checkbox.isChecked(COLORS_CONTROL_ID);
+Checkbox.addObserver(COLORS_CONTROL_ID, function (checked) {
+    colors = checked;
+});
 var FORBID_REPEAT_CONTROL_ID = "forbid-repeat-checkbox-id";
 var forbidRepeat = Checkbox.isChecked(FORBID_REPEAT_CONTROL_ID);
 Checkbox.addObserver(FORBID_REPEAT_CONTROL_ID, function (checked) {
@@ -1083,6 +1172,7 @@ Range.addObserver(DISTANCE_CONTROL_ID, callClearObservers);
 Range.addObserver(QUALITY_CONTROL_ID, callClearObservers);
 Button.addObserver(RESET_CONTROL_ID, callClearObservers);
 Checkbox.addObserver(FORBID_REPEAT_CONTROL_ID, callClearObservers);
+Checkbox.addObserver(COLORS_CONTROL_ID, callClearObservers);
 scaleObservers.push(callClearObservers);
 Canvas.Observers.mouseDrag.push(callClearObservers);
 Canvas.Observers.mouseUp.push(callClearObservers);
@@ -1185,6 +1275,17 @@ var Parameters = (function () {
         set: function (d) {
             quality = d;
             Range.setValue(QUALITY_CONTROL_ID, quality);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Parameters, "colors", {
+        get: function () {
+            return colors;
+        },
+        set: function (c) {
+            colors = c;
+            Checkbox.setChecked(COLORS_CONTROL_ID, c);
         },
         enumerable: true,
         configurable: true

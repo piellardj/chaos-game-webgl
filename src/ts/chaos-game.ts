@@ -4,22 +4,33 @@ import Shader from "./gl-utils/shader";
 import * as ShaderManager from "./gl-utils/shader-manager";
 import VBO from "./gl-utils/vbo";
 
+import ColorFromHue from "./colors";
 import Parameters from "./parameters";
 
 declare const Canvas: any;
+
+type PointsSet = {
+    color: number[],
+    from: number,
+    size: number,
+};
+
+type PointsSets = {
+    data: Float32Array,
+    sets: PointsSet[],
+}
 
 class ChaosGame extends GLResource {
     private _shader: Shader;
     private _pointsVBO: VBO;
 
-    private _nbPoints: number;
-
-    private _poles: number[]; // relative to view
-
     private _viewCenter: number[];
 
     public constructor() {
         super(gl);
+
+        const fillData = new Float32Array(2);
+        this._pointsVBO = new VBO(gl, fillData, 2, gl.FLOAT, false);
 
         this._viewCenter = [0, 0];
 
@@ -36,8 +47,6 @@ class ChaosGame extends GLResource {
         });
 
         this.recomputePolesPositions(Parameters.poles);
-
-        this.computeNextPoints(1);
 
         this._shader = null;
         ShaderManager.buildShader(
@@ -66,33 +75,33 @@ class ChaosGame extends GLResource {
         }
     }
 
-    public computeNextPoints(number: number): void {
-        this._nbPoints = number;
-
-        const data = this.computeXPoints(this._nbPoints);
-        if (this._pointsVBO) {
-            this._pointsVBO.setData(data);
-        } else {
-            this._pointsVBO = new VBO(gl, data, 2, gl.FLOAT, false);
-        }
-    }
-
-    public draw(): void {
+    public draw(nbPoints: number): void {
         const shader = this._shader;
         if (shader) {
+            const pointsSets = this.computeXPoints(nbPoints);
+            this._pointsVBO.setData(pointsSets.data);
+
             /* tslint:disable:no-string-literal */
             shader.a["aCoords"].VBO = this._pointsVBO;
-            shader.u["uAlpha"].value = 1 / (1 + 254 * Parameters.quality);
-            /* tslint:enable:no-string-literal */
 
             shader.use();
-            shader.bindUniformsAndAttributes();
+            shader.bindAttributes();
 
-            gl.drawArrays(gl.POINTS, 0, this._nbPoints);
+            const strength = 1 / (1 + 254 * Parameters.quality);                    
+            for (const pointsSet of pointsSets.sets) {
+                shader.u["uColor"].value = [
+                    pointsSet.color[0] * strength,
+                    pointsSet.color[1] * strength,
+                    pointsSet.color[2] * strength,
+                    1];
+                shader.bindUniforms();
+                gl.drawArrays(gl.POINTS, pointsSet.from, pointsSet.size);
+            }
+            /* tslint:enable:no-string-literal */
         }
     }
 
-    private recomputePolesPositions(nbPoles: number) {
+    private recomputePolesPositions(nbPoles: number): number[] {
         const canvas = Canvas.getSize();
         const aspectRatio = canvas[0] / canvas[1];
         const toNormalizedCoords = (point: number[]) => {
@@ -102,7 +111,7 @@ class ChaosGame extends GLResource {
             ];
         };
 
-        this._poles = new Array<number>(2 * nbPoles);
+        const poles = new Array<number>(2 * nbPoles);
 
         const dAngle = 2 * Math.PI / nbPoles;
         const startingAngle = (nbPoles % 2 !== 0) ? dAngle / 4 : dAngle / 2;
@@ -112,32 +121,37 @@ class ChaosGame extends GLResource {
         for (let i = 0; i < nbPoles; ++i) {
             const angle = startingAngle + i * dAngle;
 
-            this._poles[2 * i + 0] = Math.cos(angle);
-            this._poles[2 * i + 1] = Math.sin(angle);
+            poles[2 * i + 0] = Math.cos(angle);
+            poles[2 * i + 1] = Math.sin(angle);
 
-            minY = Math.min(minY, this._poles[2 * i + 1]);
-            maxY = Math.max(maxY, this._poles[2 * i + 1]);
+            minY = Math.min(minY, poles[2 * i + 1]);
+            maxY = Math.max(maxY, poles[2 * i + 1]);
         }
         const centerY = 0.5 * (maxY + minY);
 
         for (let i = 0; i < nbPoles; ++i) {
             const localCoords = toNormalizedCoords(
-                [this._poles[2 * i + 0], this._poles[2 * i + 1] - centerY]);
+                [poles[2 * i + 0], poles[2 * i + 1] - centerY]);
 
-            this._poles[2 * i + 0] = localCoords[0];
-            this._poles[2 * i + 1] = localCoords[1];
+            poles[2 * i + 0] = localCoords[0];
+            poles[2 * i + 1] = localCoords[1];
         }
+
+        return poles;
     }
 
-    private computeXPoints(N: number): Float32Array {
-        const nbPoles = this._poles.length / 2;
-        const chooseAnyPole = () => 2 * Math.floor(nbPoles * Math.random());
+    private computeXPoints(N: number): PointsSets {
+        const nbPoles = Parameters.poles;
+
+        const chooseAnyPole = () => {
+            return Math.floor(nbPoles * Math.random());
+        };
 
         let previousPole = -1;
         const chooseDifferentPole = () => {
             let pole;
             do {
-                pole = 2 * Math.floor(nbPoles * Math.random());
+                pole = chooseAnyPole();
             } while (pole === previousPole);
             previousPole = pole;
             return pole;
@@ -145,29 +159,66 @@ class ChaosGame extends GLResource {
 
         const choosePole = Parameters.forbidRepeat ? chooseDifferentPole : chooseAnyPole;
 
-        this.recomputePolesPositions(Parameters.poles);
+        const poles = this.recomputePolesPositions(nbPoles);
 
         const f = Parameters.distance;
-        const data = new Float32Array(2 * N);
 
         /* Ignore the first N points because they might not be at the right place */
-        data[0] = 2 * Math.random() - 1;
-        data[1] = 2 * Math.random() - 1;
+        const pos = [2 * Math.random() - 1, 2 * Math.random() - 1];
+
+        function nextPos(): number {
+            const pole = choosePole();
+            pos[0] += f * (poles[2 * pole + 0] - pos[0]);
+            pos[1] += f * (poles[2 * pole + 1] - pos[1]);
+            return pole;
+        }
+
         for (let i = 0; i < 500; ++i) {
-            const pole = choosePole();
-            data[0] += f * (this._poles[pole + 0] - data[0]);
-            data[1] += f * (this._poles[pole + 1] - data[1]);
+            nextPos();
         }
 
-        for (let iP = 1; iP < N; ++iP) {
-            const pole = choosePole();
-            const curr = 2 * iP;
-            const prev = 2 * (iP - 1);
-            data[curr + 0] = data[prev + 0] + f * (this._poles[pole + 0] - data[prev + 0]);
-            data[curr + 1] = data[prev + 1] + f * (this._poles[pole + 1] - data[prev + 1]);
+        const data = new Float32Array(2 * N);
+        const result = {
+            data: data,
+            sets: [],
+        };
+
+        if (Parameters.colors) {
+            const maxSizePerPole = Math.floor(N / nbPoles);
+
+            for (let i = 0; i < nbPoles; ++i) {
+                result.sets.push({
+                    color: ColorFromHue(i / nbPoles),
+                    from: i * maxSizePerPole,
+                    size: 0,
+                });
+            }
+
+            for (let iP = 0; iP < N; ++iP) {
+                const pole = nextPos();
+                if (result.sets[pole].size + 1 < maxSizePerPole)  {
+                    const index = 2 * (result.sets[pole].from  + result.sets[pole].size);
+                    result.data[index + 0] = pos[0];
+                    result.data[index + 1] = pos[1];
+                    result.sets[pole].size++;
+                }
+            }
+        } else {
+            result.sets.push({
+                color: [1, 1, 1],
+                from: 0,
+                size: N,
+            });
+
+            for (let iP = 0; iP < N; ++iP) {
+                nextPos();
+                const curr = 2 * iP;
+                result.data[curr + 0] = pos[0];
+                result.data[curr + 1] = pos[1];
+            }
         }
 
-        return data;
+        return result;
     }
 }
 
