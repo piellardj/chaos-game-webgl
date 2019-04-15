@@ -14,7 +14,6 @@ class ChaosGame extends GLResource {
 
     private _nbPoints: number;
 
-    private _nbPoles: number;
     private _poles: number[]; // relative to view
 
     private _viewCenter: number[];
@@ -30,6 +29,10 @@ class ChaosGame extends GLResource {
 
             this._viewCenter[0] -= 2 * dX * Parameters.scale * aspectRatio;
             this._viewCenter[1] += 2 * dY * Parameters.scale;
+        });
+
+        Parameters.resetViewObservers.push(() => {
+            this._viewCenter = [0, 0];
         });
 
         this.recomputePolesPositions(Parameters.poles);
@@ -99,7 +102,6 @@ class ChaosGame extends GLResource {
             ];
         };
 
-        this._nbPoles = nbPoles;
         this._poles = new Array<number>(2 * nbPoles);
 
         const dAngle = 2 * Math.PI / nbPoles;
@@ -128,13 +130,14 @@ class ChaosGame extends GLResource {
     }
 
     private computeXPoints(N: number): Float32Array {
-        const chooseAnyPole = () => 2 * Math.floor(this._nbPoles * Math.random());
+        const nbPoles = this._poles.length / 2;
+        const chooseAnyPole = () => 2 * Math.floor(nbPoles * Math.random());
 
         let previousPole = -1;
         const chooseDifferentPole = () => {
             let pole;
             do {
-                pole = 2 * Math.floor(this._nbPoles * Math.random());
+                pole = 2 * Math.floor(nbPoles * Math.random());
             } while (pole === previousPole);
             previousPole = pole;
             return pole;

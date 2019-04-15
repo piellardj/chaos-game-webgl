@@ -94,6 +94,28 @@
 
             <div class="controls-list">
               <div class="control">
+                <label>Preset:</label>
+                <div class="inline-picker compact" id="presets-picker-id" style='flex:1' data-placeholder=Custom>
+                  <div class="picker-button left">&nbsp;</div>
+                  <span></span>
+                  <div class="picker-button right">&nbsp;</div>
+                  <input type="radio" name="presets-picker-id" value="0" data-label="Sierpinski triangle">
+                  <input type="radio" name="presets-picker-id" value="1" data-label="The Church">
+                  <input type="radio" name="presets-picker-id" value="2" data-label="Pentagrams">
+                  <input type="radio" name="presets-picker-id" value="3" data-label="Wires: triangle">
+                  <input type="radio" name="presets-picker-id" value="4" data-label="Wires: cube">
+                  <input type="radio" name="presets-picker-id" value="5" data-label="Square trees">
+                  <input type="radio" name="presets-picker-id" value="6" data-label="Stars">
+                  <input type="radio" name="presets-picker-id" value="7" data-label="Infinite cubes">
+                  <input type="radio" name="presets-picker-id" value="8" data-label="Crustaceans">
+                  <input type="radio" name="presets-picker-id" value="9" data-label="Chessboard">
+                  <input type="radio" name="presets-picker-id" value="10" data-label="Starmap">
+                  <input type="radio" name="presets-picker-id" value="11" data-label="Pythagoras tree">
+                  <input type="radio" name="presets-picker-id" value="12" data-label="Monolith">
+                  <input type="radio" name="presets-picker-id" value="13" data-label="Koch snowflake">
+                </div>
+              </div>
+              <div class="control">
                 <label>Attractors:</label>
                 <div class="range">
                   <input type="range" min="3" max="16" value="5" step="1" class="slider" id="poles-range-id">
@@ -172,7 +194,7 @@
         </a>
       </div>
     </footer>
-    <script src="script/page.min.js"></script>
+    <script src="script/page.js"></script>
     <script src="script/main.js"></script>
   </body>
 

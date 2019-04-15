@@ -135,6 +135,9 @@ var ChaosGame = (function (_super) {
             _this._viewCenter[0] -= 2 * dX * parameters_1.default.scale * aspectRatio;
             _this._viewCenter[1] += 2 * dY * parameters_1.default.scale;
         });
+        parameters_1.default.resetViewObservers.push(function () {
+            _this._viewCenter = [0, 0];
+        });
         _this.recomputePolesPositions(parameters_1.default.poles);
         _this.computeNextPoints(1);
         _this._shader = null;
@@ -189,7 +192,6 @@ var ChaosGame = (function (_super) {
                 ((point[1] - _this._viewCenter[1]) / parameters_1.default.scale),
             ];
         };
-        this._nbPoles = nbPoles;
         this._poles = new Array(2 * nbPoles);
         var dAngle = 2 * Math.PI / nbPoles;
         var startingAngle = (nbPoles % 2 !== 0) ? dAngle / 4 : dAngle / 2;
@@ -210,13 +212,13 @@ var ChaosGame = (function (_super) {
         }
     };
     ChaosGame.prototype.computeXPoints = function (N) {
-        var _this = this;
-        var chooseAnyPole = function () { return 2 * Math.floor(_this._nbPoles * Math.random()); };
+        var nbPoles = this._poles.length / 2;
+        var chooseAnyPole = function () { return 2 * Math.floor(nbPoles * Math.random()); };
         var previousPole = -1;
         var chooseDifferentPole = function () {
             var pole;
             do {
-                pole = 2 * Math.floor(_this._nbPoles * Math.random());
+                pole = 2 * Math.floor(nbPoles * Math.random());
             } while (pole === previousPole);
             previousPole = pole;
             return pole;
@@ -877,12 +879,10 @@ var parameters_1 = __importDefault(__webpack_require__(/*! ./parameters */ "./sr
 function main() {
     initGL();
     Canvas.showLoader(true);
-    parameters_1.default.scale = 1;
-    parameters_1.default.poles = 3;
-    parameters_1.default.distance = 0.5;
     parameters_1.default.quality = 0.6;
     parameters_1.default.speed = 17;
     parameters_1.default.autorun = true;
+    parameters_1.default.preset = 7;
     var needToAdjustSize = true;
     var needToReset = true;
     var forceUpdate = false;
@@ -1006,8 +1006,16 @@ main();
 
 "use strict";
 
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-var scale;
+var Presets = __importStar(__webpack_require__(/*! ./presets */ "./src/ts/presets.ts"));
+var scale = 1.0;
 var MIN_SCALE = 0.05;
 var MAX_SCALE = 4.0;
 var scaleObservers = [];
@@ -1015,25 +1023,23 @@ Canvas.Observers.mouseWheel.push(function (delta, zoomCenter) {
     var newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale * (1 + 0.2 * delta)));
     if (newScale !== scale) {
         scale = newScale;
-        if (!zoomCenter) {
-            zoomCenter = Canvas.getMousePosition();
-        }
         for (var _i = 0, scaleObservers_1 = scaleObservers; _i < scaleObservers_1.length; _i++) {
             var observer = scaleObservers_1[_i];
             observer(scale, zoomCenter);
         }
     }
 });
-scale = 1.0;
 var POLES_CONTROL_ID = "poles-range-id";
 var poles = Range.getValue(POLES_CONTROL_ID);
 Range.addObserver(POLES_CONTROL_ID, function (p) {
     poles = p;
+    clearPreset();
 });
 var DISTANCE_CONTROL_ID = "distance-range-id";
 var distance = Range.getValue(DISTANCE_CONTROL_ID);
 Range.addObserver(DISTANCE_CONTROL_ID, function (d) {
     distance = d;
+    clearPreset();
 });
 var QUALITY_CONTROL_ID = "quality-range-id";
 var quality = Range.getValue(QUALITY_CONTROL_ID);
@@ -1047,10 +1053,15 @@ Range.addObserver(SPEED_CONTROL_ID, function (s) {
 });
 var AUTORUN_CONTROL_ID = "autorun-checkbox-id";
 var autorun = Checkbox.isChecked(AUTORUN_CONTROL_ID);
-Checkbox.addObserver(AUTORUN_CONTROL_ID, function (checked) { return autorun = checked; });
+Checkbox.addObserver(AUTORUN_CONTROL_ID, function (checked) {
+    autorun = checked;
+});
 var FORBID_REPEAT_CONTROL_ID = "forbid-repeat-checkbox-id";
 var forbidRepeat = Checkbox.isChecked(FORBID_REPEAT_CONTROL_ID);
-Checkbox.addObserver(FORBID_REPEAT_CONTROL_ID, function (checked) { return forbidRepeat = checked; });
+Checkbox.addObserver(FORBID_REPEAT_CONTROL_ID, function (checked) {
+    forbidRepeat = checked;
+    clearPreset();
+});
 var downloadObservers = [];
 FileControl.addDownloadObserver("result-download-id", function () {
     var size = +Tabs.getValues("result-dimensions")[0];
@@ -1075,6 +1086,36 @@ Checkbox.addObserver(FORBID_REPEAT_CONTROL_ID, callClearObservers);
 scaleObservers.push(callClearObservers);
 Canvas.Observers.mouseDrag.push(callClearObservers);
 Canvas.Observers.mouseUp.push(callClearObservers);
+var resetViewObservers = [];
+function callResetViewObservers() {
+    for (var _i = 0, resetViewObservers_1 = resetViewObservers; _i < resetViewObservers_1.length; _i++) {
+        var observer = resetViewObservers_1[_i];
+        observer();
+    }
+}
+Range.addObserver(POLES_CONTROL_ID, callResetViewObservers);
+var isPreset = true;
+var PRESETS_CONTROL_ID = "presets-picker-id";
+function clearPreset() {
+    if (isPreset) {
+        isPreset = false;
+        Picker.setValue(PRESETS_CONTROL_ID, null);
+    }
+}
+function applyPreset(presetId) {
+    if (presetId !== null) {
+        isPreset = true;
+        var preset = Presets.getPreset(presetId);
+        Parameters.poles = preset.poles;
+        Parameters.distance = preset.distance;
+        Parameters.forbidRepeat = preset.forbidRepeat;
+        Parameters.scale = preset.scale;
+        callClearObservers();
+        callResetViewObservers();
+    }
+}
+Picker.addObserver(PRESETS_CONTROL_ID, applyPreset);
+applyPreset(Picker.getValue(PRESETS_CONTROL_ID));
 var draftMode = false;
 Canvas.Observers.mouseDown.push(function () { return draftMode = true; });
 Canvas.Observers.mouseUp.push(function () { return draftMode = false; });
@@ -1087,6 +1128,7 @@ var Parameters = (function () {
         },
         set: function (s) {
             scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, s));
+            callClearObservers();
         },
         enumerable: true,
         configurable: true
@@ -1105,6 +1147,7 @@ var Parameters = (function () {
         set: function (q) {
             poles = q;
             Range.setValue(POLES_CONTROL_ID, poles);
+            callClearObservers();
         },
         enumerable: true,
         configurable: true
@@ -1116,6 +1159,7 @@ var Parameters = (function () {
         set: function (f) {
             forbidRepeat = f;
             Checkbox.setChecked(FORBID_REPEAT_CONTROL_ID, forbidRepeat);
+            callClearObservers();
         },
         enumerable: true,
         configurable: true
@@ -1181,6 +1225,13 @@ var Parameters = (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(Parameters, "resetViewObservers", {
+        get: function () {
+            return resetViewObservers;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(Parameters, "draftMode", {
         get: function () {
             return draftMode;
@@ -1188,9 +1239,121 @@ var Parameters = (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(Parameters, "preset", {
+        set: function (p) {
+            Picker.setValue(PRESETS_CONTROL_ID, "" + p);
+            applyPreset(p);
+        },
+        enumerable: true,
+        configurable: true
+    });
     return Parameters;
 }());
 exports.default = Parameters;
+
+
+/***/ }),
+
+/***/ "./src/ts/presets.ts":
+/*!***************************!*\
+  !*** ./src/ts/presets.ts ***!
+  \***************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var presets = [
+    {
+        poles: 3,
+        distance: 0.5,
+        forbidRepeat: false,
+        scale: 1,
+    },
+    {
+        poles: 6,
+        distance: 0.5,
+        forbidRepeat: false,
+        scale: 1,
+    },
+    {
+        poles: 5,
+        distance: 0.5,
+        forbidRepeat: false,
+        scale: 1,
+    },
+    {
+        poles: 3,
+        distance: 1.5,
+        forbidRepeat: false,
+        scale: 3,
+    },
+    {
+        poles: 4,
+        distance: 0.5,
+        forbidRepeat: true,
+        scale: 0.8,
+    },
+    {
+        poles: 4,
+        distance: 1.5,
+        forbidRepeat: true,
+        scale: 2.5,
+    },
+    {
+        poles: 6,
+        distance: 0.57,
+        forbidRepeat: false,
+        scale: 1.2,
+    },
+    {
+        poles: 6,
+        distance: 1.5,
+        forbidRepeat: true,
+        scale: 2,
+    },
+    {
+        poles: 4,
+        distance: 0.4,
+        forbidRepeat: true,
+        scale: 0.8
+    },
+    {
+        poles: 4,
+        distance: 1.618,
+        forbidRepeat: true,
+        scale: 3,
+    },
+    {
+        poles: 5,
+        distance: 1.618,
+        forbidRepeat: true,
+        scale: 4,
+    },
+    {
+        poles: 3,
+        distance: 1.618,
+        forbidRepeat: true,
+        scale: 4,
+    },
+    {
+        poles: 4,
+        distance: 1.618,
+        forbidRepeat: false,
+        scale: 4,
+    },
+    {
+        poles: 6,
+        distance: 0.667,
+        forbidRepeat: false,
+        scale: 0.65,
+    }
+];
+function getPreset(id) {
+    return presets[id];
+}
+exports.getPreset = getPreset;
 
 
 /***/ })

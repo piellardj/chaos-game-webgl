@@ -13,12 +13,10 @@ function main() {
 
     Canvas.showLoader(true);
 
-    Parameters.scale = 1;
-    Parameters.poles = 3;
-    Parameters.distance = 0.5;
     Parameters.quality = 0.6;
     Parameters.speed = 17;
     Parameters.autorun = true;
+    Parameters.preset = 7;
 
     let needToAdjustSize = true;
     let needToReset = true;

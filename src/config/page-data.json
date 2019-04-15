@@ -64,6 +64,70 @@
             "title": "Rules",
             "controls": [
                 {
+                    "title": "Preset",
+                    "type": "picker",
+                    "id": "presets-picker-id",
+                    "placeholder": "Custom",
+                    "options": [
+                        {
+                            "value": "0",
+                            "label": "Sierpinski triangle"
+                        },
+                        {
+                            "value": "1",
+                            "label": "The Church"
+                        },
+                        {
+                            "value": "2",
+                            "label": "Pentagrams"
+                        },
+                        {
+                            "value": "3",
+                            "label": "Wires: triangle"
+                        },
+                        {
+                            "value": "4",
+                            "label": "Wires: cube"
+                        },
+                        {
+                            "value": "5",
+                            "label": "Square trees"
+                        },
+                        {
+                            "value": "6",
+                            "label": "Stars"
+                        },
+                        {
+                            "value": "7",
+                            "label": "Infinite cubes"
+                        },
+                        {
+                            "value": "8",
+                            "label": "Crustaceans"
+                        },
+                        {
+                            "value": "9",
+                            "label": "Chessboard"
+                        },
+                        {
+                            "value": "10",
+                            "label": "Starmap"
+                        },
+                        {
+                            "value": "11",
+                            "label": "Pythagoras tree"
+                        },
+                        {
+                            "value": "12",
+                            "label": "Monolith"
+                        },
+                        {
+                            "value": "13",
+                            "label": "Koch snowflake"
+                        }
+                    ]
+                },
+                {
                     "title": "Attractors",
                     "type": "range",
                     "id": "poles-range-id",
