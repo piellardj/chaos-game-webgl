@@ -75,7 +75,7 @@ class ChaosGame extends GLResource {
         }
     }
 
-    public draw(nbPoints: number): void {
+    public draw(nbPoints: number, quality: number): void {
         const shader = this._shader;
         if (shader) {
             const pointsSets = this.computeXPoints(nbPoints);
@@ -87,7 +87,7 @@ class ChaosGame extends GLResource {
             shader.use();
             shader.bindAttributes();
 
-            const strength = 1 / (1 + 254 * Parameters.quality);
+            const strength = 1 / (1 + 254 * quality);
             for (const pointsSet of pointsSets.sets) {
                 shader.u["uColor"].value = [
                     pointsSet.color[0] * strength,

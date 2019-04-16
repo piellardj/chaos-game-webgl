@@ -35,7 +35,7 @@
                     "flat": true
                 },
                 {
-                    "title": "Step size",
+                    "title": "Speed",
                     "type": "range",
                     "id": "speed-range-id",
                     "min": 1,

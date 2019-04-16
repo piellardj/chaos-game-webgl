@@ -19,8 +19,9 @@ function main() {
     Parameters.colors = false;
     Parameters.preset = 7;
 
-    let needToAdjustSize = true;
-    let needToReset = true;
+    let needToAdjustCanvasSize = true;
+    let needToClearCanvas = true;
+    let needToDisplayPreview = false;
     let lockedCanvas = false;
     bindEvents();
 
@@ -33,27 +34,41 @@ function main() {
     }
     setTotalPoints(0);
 
+    function clearCanvas() {
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        setTotalPoints(0);
+        needToClearCanvas = false;
+    }
+
+    let isPreview = false;
     let firstDraw = true;
     function mainLoop() {
         if (!lockedCanvas) {
-            if (needToAdjustSize) {
+            if (needToAdjustCanvasSize) {
                 GLCanvas.adjustSize();
                 Viewport.setFullCanvas(gl);
-                needToAdjustSize = false;
-                needToReset = true;
+                needToAdjustCanvasSize = false;
+                needToClearCanvas = true;
             }
 
-            if (needToReset || Parameters.draftMode) {
-                gl.clear(gl.COLOR_BUFFER_BIT);
-                setTotalPoints(0);
-                needToReset = false;
+            needToClearCanvas = needToClearCanvas || (isPreview && Parameters.autorun);
+            if (needToClearCanvas) {
+                clearCanvas();
+                isPreview = false;
             }
 
-            if (Parameters.autorun || Parameters.draftMode) {
-                const speed = Parameters.draftMode ? 17 : Parameters.speed;
-                const nbPoints = Math.pow(2, speed - 1);
+            if (needToDisplayPreview) {
+                const nbPoints = Math.pow(2, 17);
+                game.draw(nbPoints, 0);
+                setTotalPoints(nbPoints);
+                needToDisplayPreview = false;
+                isPreview = true;
+            }
+
+            if (Parameters.autorun) {
+                const nbPoints = Math.pow(2, Parameters.speed - 1);
                 setTotalPoints(totalPoints + nbPoints);
-                game.draw(nbPoints);
+                game.draw(nbPoints, Parameters.quality);
 
                 if (firstDraw) {
                     firstDraw = false;
@@ -85,8 +100,10 @@ function main() {
     }
 
     function bindEvents() {
-        Canvas.Observers.canvasResize.push(() => needToAdjustSize = true);
-        Parameters.clearObservers.push(() => needToReset = true);
+        Parameters.clearObservers.push(() => needToClearCanvas = true);
+        Parameters.previewObservers.push(() => needToDisplayPreview = true);
+        Canvas.Observers.canvasResize.push(() => needToAdjustCanvasSize = true);
+
         Parameters.downloadObservers.push(drawAndDownloadResult);
     }
 
@@ -112,7 +129,7 @@ function main() {
         const pointsPerStep = 524288;
         while (nbPoints < nbPointsNeeded) {
             nbPoints += pointsPerStep;
-            game.draw(pointsPerStep);
+            game.draw(pointsPerStep, Parameters.quality);
             Canvas.setLoaderText(Math.floor(100 * nbPoints / nbPointsNeeded) + " %");
         }
 
@@ -122,7 +139,7 @@ function main() {
             canvas.style.height = "";
             Canvas.showLoader(false);
             Canvas.setLoaderText("");
-            needToAdjustSize = true;
+            needToAdjustCanvasSize = true;
             lockedCanvas = false;
         }
 

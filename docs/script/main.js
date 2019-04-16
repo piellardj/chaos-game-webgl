@@ -164,7 +164,7 @@ var ChaosGame = (function (_super) {
             this._shader = null;
         }
     };
-    ChaosGame.prototype.draw = function (nbPoints) {
+    ChaosGame.prototype.draw = function (nbPoints, quality) {
         var shader = this._shader;
         if (shader) {
             var pointsSets = this.computeXPoints(nbPoints);
@@ -172,7 +172,7 @@ var ChaosGame = (function (_super) {
             shader.a["aCoords"].VBO = this._pointsVBO;
             shader.use();
             shader.bindAttributes();
-            var strength = 1 / (1 + 254 * parameters_1.default.quality);
+            var strength = 1 / (1 + 254 * quality);
             for (var _i = 0, _a = pointsSets.sets; _i < _a.length; _i++) {
                 var pointsSet = _a[_i];
                 shader.u["uColor"].value = [
@@ -960,8 +960,9 @@ function main() {
     parameters_1.default.autorun = true;
     parameters_1.default.colors = false;
     parameters_1.default.preset = 7;
-    var needToAdjustSize = true;
-    var needToReset = true;
+    var needToAdjustCanvasSize = true;
+    var needToClearCanvas = true;
+    var needToDisplayPreview = false;
     var lockedCanvas = false;
     bindEvents();
     var game = new chaos_game_1.default();
@@ -971,25 +972,37 @@ function main() {
         Canvas.setIndicatorText("Total points", totalPoints.toLocaleString());
     }
     setTotalPoints(0);
+    function clearCanvas() {
+        gl_canvas_1.gl.clear(gl_canvas_1.gl.COLOR_BUFFER_BIT);
+        setTotalPoints(0);
+        needToClearCanvas = false;
+    }
+    var isPreview = false;
     var firstDraw = true;
     function mainLoop() {
         if (!lockedCanvas) {
-            if (needToAdjustSize) {
+            if (needToAdjustCanvasSize) {
                 GLCanvas.adjustSize();
                 viewport_1.default.setFullCanvas(gl_canvas_1.gl);
-                needToAdjustSize = false;
-                needToReset = true;
+                needToAdjustCanvasSize = false;
+                needToClearCanvas = true;
             }
-            if (needToReset || parameters_1.default.draftMode) {
-                gl_canvas_1.gl.clear(gl_canvas_1.gl.COLOR_BUFFER_BIT);
-                setTotalPoints(0);
-                needToReset = false;
+            needToClearCanvas = needToClearCanvas || (isPreview && parameters_1.default.autorun);
+            if (needToClearCanvas) {
+                clearCanvas();
+                isPreview = false;
             }
-            if (parameters_1.default.autorun || parameters_1.default.draftMode) {
-                var speed = parameters_1.default.draftMode ? 17 : parameters_1.default.speed;
-                var nbPoints = Math.pow(2, speed - 1);
+            if (needToDisplayPreview) {
+                var nbPoints = Math.pow(2, 17);
+                game.draw(nbPoints, 0);
+                setTotalPoints(nbPoints);
+                needToDisplayPreview = false;
+                isPreview = true;
+            }
+            if (parameters_1.default.autorun) {
+                var nbPoints = Math.pow(2, parameters_1.default.speed - 1);
                 setTotalPoints(totalPoints + nbPoints);
-                game.draw(nbPoints);
+                game.draw(nbPoints, parameters_1.default.quality);
                 if (firstDraw) {
                     firstDraw = false;
                     Canvas.showLoader(false);
@@ -1015,8 +1028,9 @@ function main() {
         gl_canvas_1.gl.blendFunc(gl_canvas_1.gl.ONE, gl_canvas_1.gl.ONE);
     }
     function bindEvents() {
-        Canvas.Observers.canvasResize.push(function () { return needToAdjustSize = true; });
-        parameters_1.default.clearObservers.push(function () { return needToReset = true; });
+        parameters_1.default.clearObservers.push(function () { return needToClearCanvas = true; });
+        parameters_1.default.previewObservers.push(function () { return needToDisplayPreview = true; });
+        Canvas.Observers.canvasResize.push(function () { return needToAdjustCanvasSize = true; });
         parameters_1.default.downloadObservers.push(drawAndDownloadResult);
     }
     function drawAndDownloadResult(size) {
@@ -1036,7 +1050,7 @@ function main() {
         var pointsPerStep = 524288;
         while (nbPoints < nbPointsNeeded) {
             nbPoints += pointsPerStep;
-            game.draw(pointsPerStep);
+            game.draw(pointsPerStep, parameters_1.default.quality);
             Canvas.setLoaderText(Math.floor(100 * nbPoints / nbPointsNeeded) + " %");
         }
         function restoreCanvas() {
@@ -1045,7 +1059,7 @@ function main() {
             canvas.style.height = "";
             Canvas.showLoader(false);
             Canvas.setLoaderText("");
-            needToAdjustSize = true;
+            needToAdjustCanvasSize = true;
             lockedCanvas = false;
         }
         if (canvas.msToBlob) {
@@ -1087,18 +1101,39 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var Presets = __importStar(__webpack_require__(/*! ./presets */ "./src/ts/presets.ts"));
+var downloadObservers = [];
+FileControl.addDownloadObserver("result-download-id", function () {
+    var size = +Tabs.getValues("result-dimensions")[0];
+    for (var _i = 0, downloadObservers_1 = downloadObservers; _i < downloadObservers_1.length; _i++) {
+        var observer = downloadObservers_1[_i];
+        observer(size);
+    }
+});
+function callGenericObservers(list) {
+    for (var _i = 0, list_1 = list; _i < list_1.length; _i++) {
+        var observer = list_1[_i];
+        observer();
+    }
+}
+var clearObservers = [];
+var RESET_CONTROL_ID = "reset-button-id";
+Button.addObserver(RESET_CONTROL_ID, function () { return callGenericObservers(clearObservers); });
+Canvas.Observers.mouseDrag.push(function () { return callGenericObservers(clearObservers); });
+var previewObservers = [];
+Canvas.Observers.mouseDrag.push(function () { return callGenericObservers(previewObservers); });
+var resetViewObservers = [];
+function restartRendering() {
+    callGenericObservers(clearObservers);
+    Parameters.autorun = true;
+}
 var scale = 1.0;
 var MIN_SCALE = 0.05;
 var MAX_SCALE = 4.0;
-var scaleObservers = [];
 Canvas.Observers.mouseWheel.push(function (delta, zoomCenter) {
     var newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale * (1 + 0.2 * delta)));
     if (newScale !== scale) {
         scale = newScale;
-        for (var _i = 0, scaleObservers_1 = scaleObservers; _i < scaleObservers_1.length; _i++) {
-            var observer = scaleObservers_1[_i];
-            observer(scale, zoomCenter);
-        }
+        restartRendering();
     }
 });
 var POLES_CONTROL_ID = "poles-range-id";
@@ -1106,22 +1141,27 @@ var poles = Range.getValue(POLES_CONTROL_ID);
 Range.addObserver(POLES_CONTROL_ID, function (p) {
     poles = p;
     clearPreset();
+    restartRendering();
+    callGenericObservers(resetViewObservers);
 });
 var DISTANCE_CONTROL_ID = "distance-range-id";
 var distance = Range.getValue(DISTANCE_CONTROL_ID);
 Range.addObserver(DISTANCE_CONTROL_ID, function (d) {
     distance = d;
     clearPreset();
+    restartRendering();
 });
 var QUALITY_CONTROL_ID = "quality-range-id";
 var quality = Range.getValue(QUALITY_CONTROL_ID);
 Range.addObserver(QUALITY_CONTROL_ID, function (q) {
     quality = q;
+    restartRendering();
 });
 var SPEED_CONTROL_ID = "speed-range-id";
 var speed = Range.getValue(SPEED_CONTROL_ID);
 Range.addObserver(SPEED_CONTROL_ID, function (s) {
     speed = s;
+    restartRendering();
 });
 var AUTORUN_CONTROL_ID = "autorun-checkbox-id";
 var autorun = Checkbox.isChecked(AUTORUN_CONTROL_ID);
@@ -1132,46 +1172,15 @@ var COLORS_CONTROL_ID = "colors-checkbox-id";
 var colors = Checkbox.isChecked(COLORS_CONTROL_ID);
 Checkbox.addObserver(COLORS_CONTROL_ID, function (checked) {
     colors = checked;
+    restartRendering();
 });
 var FORBID_REPEAT_CONTROL_ID = "forbid-repeat-checkbox-id";
 var forbidRepeat = Checkbox.isChecked(FORBID_REPEAT_CONTROL_ID);
 Checkbox.addObserver(FORBID_REPEAT_CONTROL_ID, function (checked) {
     forbidRepeat = checked;
     clearPreset();
+    restartRendering();
 });
-var downloadObservers = [];
-FileControl.addDownloadObserver("result-download-id", function () {
-    var size = +Tabs.getValues("result-dimensions")[0];
-    for (var _i = 0, downloadObservers_1 = downloadObservers; _i < downloadObservers_1.length; _i++) {
-        var observer = downloadObservers_1[_i];
-        observer(size);
-    }
-});
-var RESET_CONTROL_ID = "reset-button-id";
-var clearObservers = [];
-function callClearObservers() {
-    for (var _i = 0, clearObservers_1 = clearObservers; _i < clearObservers_1.length; _i++) {
-        var observer = clearObservers_1[_i];
-        observer();
-    }
-}
-Range.addObserver(POLES_CONTROL_ID, callClearObservers);
-Range.addObserver(DISTANCE_CONTROL_ID, callClearObservers);
-Range.addObserver(QUALITY_CONTROL_ID, callClearObservers);
-Button.addObserver(RESET_CONTROL_ID, callClearObservers);
-Checkbox.addObserver(FORBID_REPEAT_CONTROL_ID, callClearObservers);
-Checkbox.addObserver(COLORS_CONTROL_ID, callClearObservers);
-scaleObservers.push(callClearObservers);
-Canvas.Observers.mouseDrag.push(callClearObservers);
-Canvas.Observers.mouseUp.push(callClearObservers);
-var resetViewObservers = [];
-function callResetViewObservers() {
-    for (var _i = 0, resetViewObservers_1 = resetViewObservers; _i < resetViewObservers_1.length; _i++) {
-        var observer = resetViewObservers_1[_i];
-        observer();
-    }
-}
-Range.addObserver(POLES_CONTROL_ID, callResetViewObservers);
 var isPreset = true;
 var PRESETS_CONTROL_ID = "presets-picker-id";
 function clearPreset() {
@@ -1188,15 +1197,12 @@ function applyPreset(presetId) {
         Parameters.distance = preset.distance;
         Parameters.forbidRepeat = preset.forbidRepeat;
         Parameters.scale = preset.scale;
-        callClearObservers();
-        callResetViewObservers();
+        restartRendering();
+        callGenericObservers(resetViewObservers);
     }
 }
 Picker.addObserver(PRESETS_CONTROL_ID, applyPreset);
 applyPreset(Picker.getValue(PRESETS_CONTROL_ID));
-var draftMode = false;
-Canvas.Observers.mouseDown.push(function () { return draftMode = true; });
-Canvas.Observers.mouseUp.push(function () { return draftMode = false; });
 var Parameters = (function () {
     function Parameters() {
     }
@@ -1206,14 +1212,7 @@ var Parameters = (function () {
         },
         set: function (s) {
             scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, s));
-            callClearObservers();
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Parameters, "scaleObservers", {
-        get: function () {
-            return scaleObservers;
+            callGenericObservers(clearObservers);
         },
         enumerable: true,
         configurable: true
@@ -1225,7 +1224,7 @@ var Parameters = (function () {
         set: function (q) {
             poles = q;
             Range.setValue(POLES_CONTROL_ID, poles);
-            callClearObservers();
+            callGenericObservers(clearObservers);
         },
         enumerable: true,
         configurable: true
@@ -1237,7 +1236,7 @@ var Parameters = (function () {
         set: function (f) {
             forbidRepeat = f;
             Checkbox.setChecked(FORBID_REPEAT_CONTROL_ID, forbidRepeat);
-            callClearObservers();
+            callGenericObservers(clearObservers);
         },
         enumerable: true,
         configurable: true
@@ -1255,9 +1254,6 @@ var Parameters = (function () {
     });
     Object.defineProperty(Parameters, "quality", {
         get: function () {
-            if (draftMode) {
-                return 0;
-            }
             return quality;
         },
         set: function (d) {
@@ -1314,16 +1310,16 @@ var Parameters = (function () {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(Parameters, "resetViewObservers", {
+    Object.defineProperty(Parameters, "previewObservers", {
         get: function () {
-            return resetViewObservers;
+            return previewObservers;
         },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(Parameters, "draftMode", {
+    Object.defineProperty(Parameters, "resetViewObservers", {
         get: function () {
-            return draftMode;
+            return resetViewObservers;
         },
         enumerable: true,
         configurable: true

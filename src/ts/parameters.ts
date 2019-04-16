@@ -8,20 +8,48 @@ declare const Picker: any;
 declare const Range: any;
 declare const Tabs: any;
 
+/* Observers definitions */
+type DownloadObserver = (size: number) => void;
+const downloadObservers: DownloadObserver[] = [];
+FileControl.addDownloadObserver("result-download-id", () => {
+    const size = +Tabs.getValues("result-dimensions")[0];
+    for (const observer of downloadObservers) {
+        observer(size);
+    }
+});
+
+type GenericObserver = () => void;
+function callGenericObservers(list: GenericObserver[]) {
+    for (const observer of list) {
+        observer();
+    }
+}
+
+const clearObservers: GenericObserver[] = [];
+const RESET_CONTROL_ID = "reset-button-id";
+Button.addObserver(RESET_CONTROL_ID, () => callGenericObservers(clearObservers));
+Canvas.Observers.mouseDrag.push(() => callGenericObservers(clearObservers));
+
+const previewObservers: GenericObserver[] = [];
+Canvas.Observers.mouseDrag.push(() =>callGenericObservers(previewObservers));
+
+const resetViewObservers: GenericObserver[] = [];
+
+function restartRendering() {
+    callGenericObservers(clearObservers);
+    Parameters.autorun = true;
+}
+
+/* Parameters definitions and bindings */
 let scale = 1.0;
 const MIN_SCALE = 0.05;
 const MAX_SCALE = 4.0;
-type ScaleObserver = (newScale: number, zoomCenter: number[]) => void;
-const scaleObservers: ScaleObserver[] = [];
 Canvas.Observers.mouseWheel.push((delta: number, zoomCenter: number[]) => {
     const newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE,  scale * (1 + 0.2 * delta)));
 
     if (newScale !== scale) {
         scale = newScale;
-
-        for (const observer of scaleObservers) {
-            observer(scale, zoomCenter);
-        }
+        restartRendering();
     }
 });
 
@@ -30,6 +58,8 @@ let poles: number = Range.getValue(POLES_CONTROL_ID);
 Range.addObserver(POLES_CONTROL_ID, (p: number) => {
     poles = p;
     clearPreset();
+    restartRendering();
+    callGenericObservers(resetViewObservers);
 });
 
 const DISTANCE_CONTROL_ID = "distance-range-id";
@@ -37,18 +67,21 @@ let distance: number = Range.getValue(DISTANCE_CONTROL_ID);
 Range.addObserver(DISTANCE_CONTROL_ID, (d: number) => {
     distance = d;
     clearPreset();
+    restartRendering();
 });
 
 const QUALITY_CONTROL_ID = "quality-range-id";
 let quality: number = Range.getValue(QUALITY_CONTROL_ID);
 Range.addObserver(QUALITY_CONTROL_ID, (q: number) => {
     quality = q;
+    restartRendering();
 });
 
 const SPEED_CONTROL_ID = "speed-range-id";
 let speed: number = Range.getValue(SPEED_CONTROL_ID);
 Range.addObserver(SPEED_CONTROL_ID, (s: number) => {
     speed = s;
+    restartRendering();
 });
 
 const AUTORUN_CONTROL_ID = "autorun-checkbox-id";
@@ -61,6 +94,7 @@ const COLORS_CONTROL_ID = "colors-checkbox-id";
 let colors: boolean = Checkbox.isChecked(COLORS_CONTROL_ID);
 Checkbox.addObserver(COLORS_CONTROL_ID, (checked: boolean) => {
     colors = checked;
+    restartRendering();
 });
 
 const FORBID_REPEAT_CONTROL_ID = "forbid-repeat-checkbox-id";
@@ -68,43 +102,8 @@ let forbidRepeat: boolean = Checkbox.isChecked(FORBID_REPEAT_CONTROL_ID);
 Checkbox.addObserver(FORBID_REPEAT_CONTROL_ID, (checked: boolean) => {
     forbidRepeat = checked;
     clearPreset();
+    restartRendering();
 });
-
-type DownloadObserver = (size: number) => void;
-const downloadObservers: DownloadObserver[] = [];
-FileControl.addDownloadObserver("result-download-id", () => {
-    const size = +Tabs.getValues("result-dimensions")[0];
-    for (const observer of downloadObservers) {
-        observer(size);
-    }
-});
-
-const RESET_CONTROL_ID = "reset-button-id";
-type ClearObserver = () => void;
-const clearObservers: ClearObserver[] = [];
-function callClearObservers() {
-    for (const observer of clearObservers) {
-        observer();
-    }
-}
-Range.addObserver(POLES_CONTROL_ID, callClearObservers);
-Range.addObserver(DISTANCE_CONTROL_ID, callClearObservers);
-Range.addObserver(QUALITY_CONTROL_ID, callClearObservers);
-Button.addObserver(RESET_CONTROL_ID, callClearObservers);
-Checkbox.addObserver(FORBID_REPEAT_CONTROL_ID, callClearObservers);
-Checkbox.addObserver(COLORS_CONTROL_ID, callClearObservers);
-scaleObservers.push(callClearObservers);
-Canvas.Observers.mouseDrag.push(callClearObservers);
-Canvas.Observers.mouseUp.push(callClearObservers);
-
-type ResetViewObserver = () => void;
-const resetViewObservers: ResetViewObserver[] = [];
-function callResetViewObservers() {
-    for (const observer of resetViewObservers) {
-        observer();
-    }
-}
-Range.addObserver(POLES_CONTROL_ID, callResetViewObservers);
 
 let isPreset = true;
 const PRESETS_CONTROL_ID = "presets-picker-id";
@@ -123,16 +122,12 @@ function applyPreset(presetId: number) {
         Parameters.distance = preset.distance;
         Parameters.forbidRepeat = preset.forbidRepeat;
         Parameters.scale = preset.scale;
-        callClearObservers();
-        callResetViewObservers();
+        restartRendering();
+        callGenericObservers(resetViewObservers);
     }
 }
 Picker.addObserver(PRESETS_CONTROL_ID, applyPreset);
 applyPreset(Picker.getValue(PRESETS_CONTROL_ID));
-
-let draftMode = false;
-Canvas.Observers.mouseDown.push(() => draftMode = true);
-Canvas.Observers.mouseUp.push(() => draftMode = false);
 
 class Parameters {
     public static get scale(): number {
@@ -140,10 +135,7 @@ class Parameters {
     }
     public static set scale(s: number) {
         scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, s));
-        callClearObservers();
-    }
-    public static get scaleObservers(): ScaleObserver[] {
-        return scaleObservers;
+        callGenericObservers(clearObservers);
     }
 
     public static get poles(): number {
@@ -152,7 +144,7 @@ class Parameters {
     public static set poles(q: number) {
         poles = q;
         Range.setValue(POLES_CONTROL_ID, poles);
-        callClearObservers();
+        callGenericObservers(clearObservers);
     }
 
     public static get forbidRepeat(): boolean {
@@ -161,7 +153,7 @@ class Parameters {
     public static set forbidRepeat(f: boolean) {
         forbidRepeat = f;
         Checkbox.setChecked(FORBID_REPEAT_CONTROL_ID, forbidRepeat);
-        callClearObservers();
+        callGenericObservers(clearObservers);
     }
 
     public static get distance(): number {
@@ -173,9 +165,6 @@ class Parameters {
     }
 
     public static get quality(): number {
-        if (draftMode) {
-            return 0;
-        }
         return quality;
     }
     public static set quality(d: number) {
@@ -211,16 +200,16 @@ class Parameters {
         return downloadObservers;
     }
 
-    public static get clearObservers(): ClearObserver[] {
+    public static get clearObservers(): GenericObserver[] {
         return clearObservers;
     }
 
-    public static get resetViewObservers(): ResetViewObserver[] {
-        return resetViewObservers;
+    public static get previewObservers(): GenericObserver[] {
+        return previewObservers;
     }
 
-    public static get draftMode(): boolean {
-        return draftMode;
+    public static get resetViewObservers(): GenericObserver[] {
+        return resetViewObservers;
     }
 
     public static set preset(p: number) {
