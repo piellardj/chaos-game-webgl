@@ -30,12 +30,6 @@
                 },
                 {
                     "type": "button",
-                    "id": "next-button-id",
-                    "label": "Next step",
-                    "flat": true
-                },
-                {
-                    "type": "button",
                     "id": "reset-button-id",
                     "label": "Clear",
                     "flat": true

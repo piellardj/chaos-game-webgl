@@ -21,7 +21,6 @@ function main() {
 
     let needToAdjustSize = true;
     let needToReset = true;
-    let forceUpdate = false;
     let lockedCanvas = false;
     bindEvents();
 
@@ -50,13 +49,11 @@ function main() {
                 needToReset = false;
             }
 
-            if (Parameters.autorun || forceUpdate || Parameters.draftMode) {
+            if (Parameters.autorun || Parameters.draftMode) {
                 const speed = Parameters.draftMode ? 17 : Parameters.speed;
                 const nbPoints = Math.pow(2, speed - 1);
                 setTotalPoints(totalPoints + nbPoints);
                 game.draw(nbPoints);
-
-                forceUpdate = false;
 
                 if (firstDraw) {
                     firstDraw = false;
@@ -90,7 +87,6 @@ function main() {
     function bindEvents() {
         Canvas.Observers.canvasResize.push(() => needToAdjustSize = true);
         Parameters.clearObservers.push(() => needToReset = true);
-        Button.addObserver("next-button-id", () => forceUpdate = true);
         Parameters.downloadObservers.push(drawAndDownloadResult);
     }
 

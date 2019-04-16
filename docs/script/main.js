@@ -962,7 +962,6 @@ function main() {
     parameters_1.default.preset = 7;
     var needToAdjustSize = true;
     var needToReset = true;
-    var forceUpdate = false;
     var lockedCanvas = false;
     bindEvents();
     var game = new chaos_game_1.default();
@@ -986,12 +985,11 @@ function main() {
                 setTotalPoints(0);
                 needToReset = false;
             }
-            if (parameters_1.default.autorun || forceUpdate || parameters_1.default.draftMode) {
+            if (parameters_1.default.autorun || parameters_1.default.draftMode) {
                 var speed = parameters_1.default.draftMode ? 17 : parameters_1.default.speed;
                 var nbPoints = Math.pow(2, speed - 1);
                 setTotalPoints(totalPoints + nbPoints);
                 game.draw(nbPoints);
-                forceUpdate = false;
                 if (firstDraw) {
                     firstDraw = false;
                     Canvas.showLoader(false);
@@ -1019,7 +1017,6 @@ function main() {
     function bindEvents() {
         Canvas.Observers.canvasResize.push(function () { return needToAdjustSize = true; });
         parameters_1.default.clearObservers.push(function () { return needToReset = true; });
-        Button.addObserver("next-button-id", function () { return forceUpdate = true; });
         parameters_1.default.downloadObservers.push(drawAndDownloadResult);
     }
     function drawAndDownloadResult(size) {
@@ -1409,7 +1406,7 @@ var presets = [
         poles: 4,
         distance: 0.4,
         forbidRepeat: true,
-        scale: 0.8
+        scale: 0.8,
     },
     {
         poles: 4,
@@ -1440,7 +1437,7 @@ var presets = [
         distance: 0.667,
         forbidRepeat: false,
         scale: 0.65,
-    }
+    },
 ];
 function getPreset(id) {
     return presets[id];
