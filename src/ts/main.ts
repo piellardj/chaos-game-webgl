@@ -2,6 +2,7 @@ import * as GLCanvas from "./gl-utils/gl-canvas";
 import { gl } from "./gl-utils/gl-canvas";
 import Viewport from "./gl-utils/viewport";
 
+import DownloadCanvas from "./downloader";
 import Game from "./chaos-game";
 import Parameters from "./parameters";
 
@@ -104,59 +105,14 @@ function main() {
         Parameters.previewObservers.push(() => needToDisplayPreview = true);
         Canvas.Observers.canvasResize.push(() => needToAdjustCanvasSize = true);
 
-        Parameters.downloadObservers.push(drawAndDownloadResult);
-    }
-
-    function drawAndDownloadResult(size: number): void {
-        const canvas = Canvas.getCanvas() as HTMLCanvasElement;
-        const nbPointsNeeded = totalPoints * Math.pow(size / canvas.height, 2);
-        lockedCanvas = true;
-
-        Canvas.showLoader(true);
-
-        /* Update CSS to allow the canvas to have the correct size */
-        canvas.style.position = "absolute";
-        canvas.style.width = size + "px";
-        canvas.style.height = size + "px";
-        canvas.width = size;
-        canvas.height = size;
-
-        GLCanvas.adjustSize();
-        Viewport.setFullCanvas(gl);
-
-        gl.clear(gl.COLOR_BUFFER_BIT);
-        let nbPoints = 0;
-        const pointsPerStep = 524288;
-        while (nbPoints < nbPointsNeeded) {
-            nbPoints += pointsPerStep;
-            game.draw(pointsPerStep, Parameters.quality);
-            Canvas.setLoaderText(Math.floor(100 * nbPoints / nbPointsNeeded) + " %");
-        }
-
-        function restoreCanvas() {
-            canvas.style.position = "";
-            canvas.style.width = "";
-            canvas.style.height = "";
-            Canvas.showLoader(false);
-            Canvas.setLoaderText("");
-            needToAdjustCanvasSize = true;
+        Parameters.downloadObservers.push((wantedSize: number) => {
+            lockedCanvas = true;
+            const canvasHeight = Canvas.getSize()[1];
+            const nbPointsNeeded = totalPoints * Math.pow(wantedSize / canvasHeight, 2);
+            DownloadCanvas(game, wantedSize, nbPointsNeeded);
             lockedCanvas = false;
-        }
-
-        if ((canvas as any).msToBlob) { // for IE
-            const blob = (canvas as any).msToBlob();
-            window.navigator.msSaveBlob(blob, "chaos-game.png");
-            restoreCanvas();
-        } else {
-            canvas.toBlob((blob) => {
-                const link = document.createElement("a");
-                link.download = "chaos-game.png";
-                link.href = URL.createObjectURL(blob);
-                link.click();
-
-                restoreCanvas();
-            });
-        }
+            needToAdjustCanvasSize = true;
+        });
     }
 }
 

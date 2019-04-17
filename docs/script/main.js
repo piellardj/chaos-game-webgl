@@ -326,6 +326,78 @@ exports.default = ColorFromHue;
 
 /***/ }),
 
+/***/ "./src/ts/downloader.ts":
+/*!******************************!*\
+  !*** ./src/ts/downloader.ts ***!
+  \******************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var GLCanvas = __importStar(__webpack_require__(/*! ./gl-utils/gl-canvas */ "./src/ts/gl-utils/gl-canvas.ts"));
+var gl_canvas_1 = __webpack_require__(/*! ./gl-utils/gl-canvas */ "./src/ts/gl-utils/gl-canvas.ts");
+var viewport_1 = __importDefault(__webpack_require__(/*! ./gl-utils/viewport */ "./src/ts/gl-utils/viewport.ts"));
+var parameters_1 = __importDefault(__webpack_require__(/*! ./parameters */ "./src/ts/parameters.ts"));
+function downloadCanvas(game, size, nbPointsNeeded) {
+    var canvas = Canvas.getCanvas();
+    function isolateCanvas() {
+        Canvas.showLoader(true);
+        canvas.style.position = "absolute";
+        canvas.style.width = size + "px";
+        canvas.style.height = size + "px";
+        canvas.width = size;
+        canvas.height = size;
+        GLCanvas.adjustSize();
+        viewport_1.default.setFullCanvas(gl_canvas_1.gl);
+    }
+    function restoreCanvas() {
+        canvas.style.position = "";
+        canvas.style.width = "";
+        canvas.style.height = "";
+        Canvas.showLoader(false);
+        Canvas.setLoaderText("");
+    }
+    isolateCanvas();
+    gl_canvas_1.gl.clear(gl_canvas_1.gl.COLOR_BUFFER_BIT);
+    var nbPoints = 0;
+    var pointsPerStep = 524288;
+    while (nbPoints < nbPointsNeeded) {
+        nbPoints += pointsPerStep;
+        game.draw(pointsPerStep, parameters_1.default.quality);
+        Canvas.setLoaderText(Math.floor(100 * nbPoints / nbPointsNeeded) + " %");
+    }
+    if (canvas.msToBlob) {
+        var blob = canvas.msToBlob();
+        window.navigator.msSaveBlob(blob, "chaos-game.png");
+        restoreCanvas();
+    }
+    else {
+        canvas.toBlob(function (blob) {
+            var link = document.createElement("a");
+            link.download = "chaos-game.png";
+            link.href = URL.createObjectURL(blob);
+            link.click();
+            restoreCanvas();
+        });
+    }
+}
+exports.default = downloadCanvas;
+
+
+/***/ }),
+
 /***/ "./src/ts/gl-utils/gl-canvas.ts":
 /*!**************************************!*\
   !*** ./src/ts/gl-utils/gl-canvas.ts ***!
@@ -950,6 +1022,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var GLCanvas = __importStar(__webpack_require__(/*! ./gl-utils/gl-canvas */ "./src/ts/gl-utils/gl-canvas.ts"));
 var gl_canvas_1 = __webpack_require__(/*! ./gl-utils/gl-canvas */ "./src/ts/gl-utils/gl-canvas.ts");
 var viewport_1 = __importDefault(__webpack_require__(/*! ./gl-utils/viewport */ "./src/ts/gl-utils/viewport.ts"));
+var downloader_1 = __importDefault(__webpack_require__(/*! ./downloader */ "./src/ts/downloader.ts"));
 var chaos_game_1 = __importDefault(__webpack_require__(/*! ./chaos-game */ "./src/ts/chaos-game.ts"));
 var parameters_1 = __importDefault(__webpack_require__(/*! ./parameters */ "./src/ts/parameters.ts"));
 function main() {
@@ -1031,51 +1104,14 @@ function main() {
         parameters_1.default.clearObservers.push(function () { return needToClearCanvas = true; });
         parameters_1.default.previewObservers.push(function () { return needToDisplayPreview = true; });
         Canvas.Observers.canvasResize.push(function () { return needToAdjustCanvasSize = true; });
-        parameters_1.default.downloadObservers.push(drawAndDownloadResult);
-    }
-    function drawAndDownloadResult(size) {
-        var canvas = Canvas.getCanvas();
-        var nbPointsNeeded = totalPoints * Math.pow(size / canvas.height, 2);
-        lockedCanvas = true;
-        Canvas.showLoader(true);
-        canvas.style.position = "absolute";
-        canvas.style.width = size + "px";
-        canvas.style.height = size + "px";
-        canvas.width = size;
-        canvas.height = size;
-        GLCanvas.adjustSize();
-        viewport_1.default.setFullCanvas(gl_canvas_1.gl);
-        gl_canvas_1.gl.clear(gl_canvas_1.gl.COLOR_BUFFER_BIT);
-        var nbPoints = 0;
-        var pointsPerStep = 524288;
-        while (nbPoints < nbPointsNeeded) {
-            nbPoints += pointsPerStep;
-            game.draw(pointsPerStep, parameters_1.default.quality);
-            Canvas.setLoaderText(Math.floor(100 * nbPoints / nbPointsNeeded) + " %");
-        }
-        function restoreCanvas() {
-            canvas.style.position = "";
-            canvas.style.width = "";
-            canvas.style.height = "";
-            Canvas.showLoader(false);
-            Canvas.setLoaderText("");
-            needToAdjustCanvasSize = true;
+        parameters_1.default.downloadObservers.push(function (wantedSize) {
+            lockedCanvas = true;
+            var canvasHeight = Canvas.getSize()[1];
+            var nbPointsNeeded = totalPoints * Math.pow(wantedSize / canvasHeight, 2);
+            downloader_1.default(game, wantedSize, nbPointsNeeded);
             lockedCanvas = false;
-        }
-        if (canvas.msToBlob) {
-            var blob = canvas.msToBlob();
-            window.navigator.msSaveBlob(blob, "chaos-game.png");
-            restoreCanvas();
-        }
-        else {
-            canvas.toBlob(function (blob) {
-                var link = document.createElement("a");
-                link.download = "chaos-game.png";
-                link.href = URL.createObjectURL(blob);
-                link.click();
-                restoreCanvas();
-            });
-        }
+            needToAdjustCanvasSize = true;
+        });
     }
 }
 main();
