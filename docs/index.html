@@ -48,41 +48,47 @@
             <span id="Total points-indicator-id">Total points:</span>
           </div>
           <div id="canvas-buttons-column">
-            <label id="fullscreen-toggle-id" for="fullscreen-checkbox-id"></label>
-            <label id="side-pane-toggle-id" for="side-pane-checkbox-id"></label>
+            <label class="canvas-button" id="fullscreen-toggle-id" for="fullscreen-checkbox-id"></label>
+            <label class="canvas-button" id="side-pane-toggle-id" for="side-pane-checkbox-id"></label>
           </div>
         </div>
         <div class="controls-block">
+          <label class="canvas-button" id="side-pane-close-toggle-id" for="side-pane-checkbox-id">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+              <line x1="22" y1="22" x2="10" y2="10" stroke-linecap="round" stroke-width="2" />
+              <line x1="22" y1="10" x2="10" y2="22" stroke-linecap="round" stroke-width="2" />
+            </svg>
+          </label>
 
           <section class="controls-section">
             <h2>Rendering</h2>
 
             <div class="controls-list">
-              <div class="control">
+              <div class="control" id="control-autorun-checkbox-id">
                 <label>Keep drawing:</label>
                 <div class="checkbox">
                   <input type="checkbox" id="autorun-checkbox-id" checked>
                   <label for="autorun-checkbox-id" class="checkmark"></label>
                 </div>
               </div>
-              <div class="control">
+              <div class="control" id="control-reset-button-id">
                 <button class="button  flat" id="reset-button-id">Clear</button>
               </div>
-              <div class="control">
+              <div class="control" id="control-speed-range-id">
                 <label>Speed:</label>
                 <div class="range">
                   <input type="range" min="1" max="20" value="15" step="1" class="slider" id="speed-range-id">
                   <span class="tooltip"></span>
                 </div>
               </div>
-              <div class="control">
+              <div class="control" id="control-quality-range-id">
                 <label>Quality:</label>
                 <div class="range">
                   <input type="range" min="0" max="1" value="0.6" step="0.1" class="slider" id="quality-range-id">
                   <span class="tooltip"></span>
                 </div>
               </div>
-              <div class="control">
+              <div class="control" id="control-colors-checkbox-id">
                 <label>Rainbow:</label>
                 <div class="checkbox">
                   <input type="checkbox" id="colors-checkbox-id">
@@ -97,7 +103,7 @@
             <h2>Rules</h2>
 
             <div class="controls-list">
-              <div class="control">
+              <div class="control" id="control-presets-picker-id">
                 <label>Preset:</label>
                 <div class="inline-picker compact" id="presets-picker-id" style='flex:1' data-placeholder=Custom>
                   <div class="picker-button left">&nbsp;</div>
@@ -119,21 +125,21 @@
                   <input type="radio" name="presets-picker-id" value="13" data-label="Koch snowflake">
                 </div>
               </div>
-              <div class="control">
+              <div class="control" id="control-poles-range-id">
                 <label>Attractors:</label>
                 <div class="range">
                   <input type="range" min="3" max="16" value="5" step="1" class="slider" id="poles-range-id">
                   <span class="tooltip"></span>
                 </div>
               </div>
-              <div class="control">
+              <div class="control" id="control-distance-range-id">
                 <label>Distance:</label>
                 <div class="range">
                   <input type="range" min="0.1" max="2" value="0.5" step="0.001" class="slider" id="distance-range-id">
                   <span class="tooltip"></span>
                 </div>
               </div>
-              <div class="control">
+              <div class="control" id="control-forbid-repeat-checkbox-id">
                 <label>Forbid repeat:</label>
                 <div class="checkbox">
                   <input type="checkbox" id="forbid-repeat-checkbox-id">
@@ -148,7 +154,7 @@
             <h2>Result</h2>
 
             <div class="controls-list">
-              <div class="control">
+              <div class="control" id="control-result-dimensions">
                 <label>Dimensions:</label>
                 <div class="tabs compact" id="result-dimensions-id">
                   <input type="radio" name="result-dimensions" value="1024" id="result-dimensions-1024-id" checked />
@@ -159,7 +165,7 @@
                   <label for="result-dimensions-4096-id">4096</label>
                 </div>
               </div>
-              <div class="control">
+              <div class="control" id="control-result-download-id">
                 <div class="file-control download ">
                   <label class="file-control-button" id="result-download-id">
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">

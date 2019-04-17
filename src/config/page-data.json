@@ -158,7 +158,7 @@
                 {
                     "title": "Dimensions",
                     "type": "tabs",
-                    "group": "result-dimensions",
+                    "id": "result-dimensions",
                     "unique": true,
                     "options": [
                         {
