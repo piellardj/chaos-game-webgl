@@ -1322,7 +1322,7 @@ var Parameters = (function () {
     });
     Object.defineProperty(Parameters, "distanceFrom", {
         get: function () {
-            return distanceFrom;
+            return Math.min(distanceFrom, distanceTo);
         },
         set: function (d) {
             distanceFrom = d;
@@ -1333,7 +1333,7 @@ var Parameters = (function () {
     });
     Object.defineProperty(Parameters, "distanceTo", {
         get: function () {
-            return distanceTo;
+            return Math.max(distanceFrom, distanceTo);
         },
         set: function (d) {
             distanceTo = d;

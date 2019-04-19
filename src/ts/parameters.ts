@@ -148,7 +148,7 @@ class Parameters {
     }
 
     public static get distanceFrom(): number {
-        return distanceFrom;
+        return Math.min(distanceFrom, distanceTo);
     }
     public static set distanceFrom(d: number) {
         distanceFrom = d;
@@ -156,7 +156,7 @@ class Parameters {
     }
 
     public static get distanceTo(): number {
-        return distanceTo;
+        return Math.max(distanceFrom, distanceTo);
     }
     public static set distanceTo(d: number) {
         distanceTo = d;
