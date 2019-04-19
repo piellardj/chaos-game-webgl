@@ -1061,7 +1061,7 @@ function main() {
     var totalPoints;
     function setTotalPoints(total) {
         totalPoints = total;
-        Canvas.setIndicatorText("Total points", totalPoints.toLocaleString());
+        Canvas.setIndicatorText("Points drawn", totalPoints.toLocaleString());
     }
     setTotalPoints(0);
     function clearCanvas() {

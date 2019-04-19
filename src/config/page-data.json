@@ -2,8 +2,9 @@
     "title": "Chaos game",
     "description": "WebGL implementation of the Chaos game.",
     "introduction": [
-        "...",
-        "..."
+        "The Chaos Game is an iterative way of drawing fractals using a number of fixed invisible points called attractors and a single point that is repeatedly moved and drawn on the canvas. The initial position of the point is picked randomly on the canvas, and then the next position is computed as follow: a random attractor is chosen and the point is moved a fraction of the distance towards this attractor.",
+        "You can discover lots of different fractals by slightly modifying the parameters: number of attractors, the distance used to move the point and an additional rule forbidding to choose the same attractor twice in a row. Moreover, the simulation can run in an additional mode where the distance slowly drifts, resulting in flower-like patterns.",
+        "This project is running on CPU and rendered using WebGL."
     ],
     "githubProjectName": "chaos-game-webgl",
     "additionalLinks": [],
@@ -11,7 +12,7 @@
         "script/main.js"
     ],
     "indicators": [
-        "Total points"
+        "Points drawn"
     ],
     "canvas": {
         "width": 512,
@@ -31,7 +32,7 @@
                 {
                     "type": "button",
                     "id": "reset-button-id",
-                    "label": "Clear",
+                    "label": "Clear canvas",
                     "flat": true
                 },
                 {
@@ -76,7 +77,7 @@
                         },
                         {
                             "value": "movement",
-                            "label": "Movement"
+                            "label": "Drift"
                         }
                     ]
                 },
@@ -191,7 +192,7 @@
             "title": "Result",
             "controls": [
                 {
-                    "title": "Dimensions",
+                    "title": "Image size",
                     "type": "tabs",
                     "id": "result-dimensions",
                     "unique": true,
@@ -214,7 +215,7 @@
                 {
                     "type": "file-download",
                     "id": "result-download-id",
-                    "label": "Download",
+                    "label": "Download image",
                     "flat": true
                 }
             ]

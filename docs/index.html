@@ -20,8 +20,9 @@
         <h1>Chaos game</h1>
 
         <div class="description">
-          <p>...</p>
-          <p>...</p>
+          <p>The Chaos Game is an iterative way of drawing fractals using a number of fixed invisible points called attractors and a single point that is repeatedly moved and drawn on the canvas. The initial position of the point is picked randomly on the canvas, and then the next position is computed as follow: a random attractor is chosen and the point is moved a fraction of the distance towards this attractor.</p>
+          <p>You can discover lots of different fractals by slightly modifying the parameters: number of attractors, the distance used to move the point and an additional rule forbidding to choose the same attractor twice in a row. Moreover, the simulation can run in an additional mode where the distance slowly drifts, resulting in flower-like patterns.</p>
+          <p>This project is running on CPU and rendered using WebGL.</p>
 
           <br>
 
@@ -45,7 +46,7 @@
             <div class="loader-animation"></div>
           </div>
           <div id="indicators">
-            <span id="Total points-indicator-id">Total points:</span>
+            <span id="Points drawn-indicator-id">Points drawn:</span>
           </div>
           <div id="canvas-buttons-column">
             <label class="canvas-button" id="fullscreen-toggle-id" for="fullscreen-checkbox-id"></label>
@@ -72,7 +73,7 @@
                 </div>
               </div>
               <div class="control" id="control-reset-button-id">
-                <button class="button  flat" id="reset-button-id">Clear</button>
+                <button class="button  flat" id="reset-button-id">Clear canvas</button>
               </div>
               <div class="control" id="control-speed-range-id">
                 <label>Batch size:</label>
@@ -109,7 +110,7 @@
                   <input type="radio" name="mode" value="fixed" id="mode-fixed-id" checked />
                   <label for="mode-fixed-id">Fixed</label>
                   <input type="radio" name="mode" value="movement" id="mode-movement-id" />
-                  <label for="mode-movement-id">Movement</label>
+                  <label for="mode-movement-id">Drift</label>
                 </div>
               </div>
               <div class="control" id="control-presets-picker-id">
@@ -178,7 +179,7 @@
 
             <div class="controls-list">
               <div class="control" id="control-result-dimensions">
-                <label>Dimensions:</label>
+                <label>Image size:</label>
                 <div class="tabs compact" id="result-dimensions-id">
                   <input type="radio" name="result-dimensions" value="1024" id="result-dimensions-1024-id" checked />
                   <label for="result-dimensions-1024-id">1024</label>
@@ -194,7 +195,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
                       <path d="M12 4L12 13 7 13 16 24 25 13 20 13 20 4ZM6 25L26 25 26 29 6 29Z" />
                     </svg>
-                    <span>Download</span>
+                    <span>Download image</span>
                   </label>
                 </div>
               </div>
