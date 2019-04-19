@@ -75,10 +75,10 @@ class ChaosGame extends GLResource {
         }
     }
 
-    public draw(nbPoints: number, quality: number): void {
+    public draw(nbPoints: number, distance: number, quality: number): void {
         const shader = this._shader;
         if (shader) {
-            const pointsSets = this.computeXPoints(nbPoints);
+            const pointsSets = this.computeXPoints(nbPoints, distance);
             this._pointsVBO.setData(pointsSets.data);
 
             /* tslint:disable:no-string-literal */
@@ -129,7 +129,7 @@ class ChaosGame extends GLResource {
         return poles;
     }
 
-    private computeXPoints(N: number): IPointsSets {
+    private computeXPoints(N: number, distance: number): IPointsSets {
         const nbPoles = Parameters.poles;
 
         const chooseAnyPole = () => {
@@ -150,15 +150,13 @@ class ChaosGame extends GLResource {
 
         const poles: Float32Array = this.recomputePolesPositions(nbPoles);
 
-        const f = Parameters.distance;
-
         /* Ignore the first N points because they might not be at the right place */
         const pos = [2 * Math.random() - 1, 2 * Math.random() - 1];
 
         function nextPos(): number {
             const pole = choosePole();
-            pos[0] += f * (poles[2 * pole + 0] - pos[0]);
-            pos[1] += f * (poles[2 * pole + 1] - pos[1]);
+            pos[0] += distance * (poles[2 * pole + 0] - pos[0]);
+            pos[1] += distance * (poles[2 * pole + 1] - pos[1]);
             return pole;
         }
 

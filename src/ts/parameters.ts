@@ -3,10 +3,117 @@ import * as Presets from "./presets";
 declare const Button: any;
 declare const Canvas: any;
 declare const Checkbox: any;
+declare const Controls: any;
 declare const FileControl: any;
 declare const Picker: any;
 declare const Range: any;
 declare const Tabs: any;
+
+class Parameters {
+    public static get scale(): number {
+        return scale;
+    }
+    public static set scale(s: number) {
+        scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, s));
+        callGenericObservers(clearObservers);
+    }
+
+    public static get poles(): number {
+        return poles;
+    }
+    public static set poles(q: number) {
+        poles = q;
+        Range.setValue(POLES_CONTROL_ID, poles);
+        callGenericObservers(clearObservers);
+    }
+
+    public static get forbidRepeat(): boolean {
+        return forbidRepeat;
+    }
+    public static set forbidRepeat(f: boolean) {
+        forbidRepeat = f;
+        Checkbox.setChecked(FORBID_REPEAT_CONTROL_ID, forbidRepeat);
+        callGenericObservers(clearObservers);
+    }
+
+    public static get distance(): number {
+        return distance;
+    }
+    public static set distance(d: number) {
+        distance = d;
+        Range.setValue(DISTANCE_CONTROL_ID, distance);
+    }
+
+    public static get distanceTo(): number {
+        return distanceTo;
+    }
+
+    public static get distanceFrom(): number {
+        return distanceFrom;
+    }
+
+    public static get quality(): number {
+        return quality;
+    }
+    public static set quality(d: number) {
+        quality = d;
+        Range.setValue(QUALITY_CONTROL_ID, quality);
+    }
+
+    public static get colors(): boolean {
+        return colors;
+    }
+    public static set colors(c: boolean) {
+        colors = c;
+        Checkbox.setChecked(COLORS_CONTROL_ID, c);
+    }
+
+    public static get speed(): number {
+        return speed;
+    }
+    public static set speed(s: number) {
+        speed = s;
+        Range.setValue(SPEED_CONTROL_ID, speed);
+    }
+
+    public static get autorun(): boolean {
+        return autorun;
+    }
+    public static set autorun(a: boolean) {
+        autorun = a;
+        Checkbox.setChecked(AUTORUN_CONTROL_ID, a);
+    }
+
+    public static get downloadObservers(): DownloadObserver[] {
+        return downloadObservers;
+    }
+
+    public static get clearObservers(): GenericObserver[] {
+        return clearObservers;
+    }
+
+    public static get previewObservers(): GenericObserver[] {
+        return previewObservers;
+    }
+
+    public static get resetViewObservers(): GenericObserver[] {
+        return resetViewObservers;
+    }
+
+    public static set preset(p: number) {
+        Picker.setValue(PRESETS_CONTROL_ID, "" + p);
+        applyPreset(p);
+    }
+
+    public static get mode(): Mode {
+        return mode;
+    }
+    public static get modeChangeObservers(): ModeChangeObserver[] {
+        return modeChangeObservers;
+    }
+
+    private constructor() {}
+}
 
 /* Observers definitions */
 type DownloadObserver = (size: number) => void;
@@ -129,95 +236,48 @@ function applyPreset(presetId: number) {
 Picker.addObserver(PRESETS_CONTROL_ID, applyPreset);
 applyPreset(Picker.getValue(PRESETS_CONTROL_ID));
 
-class Parameters {
-    public static get scale(): number {
-        return scale;
-    }
-    public static set scale(s: number) {
-        scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, s));
-        callGenericObservers(clearObservers);
-    }
+const DISTANCE_FROM_CONTROL_ID = "distance-from-range-id";
+let distanceFrom: number = Range.getValue(DISTANCE_FROM_CONTROL_ID);
+Range.addObserver(DISTANCE_FROM_CONTROL_ID, (df: number) => {
+    distanceFrom = df;
+    callGenericObservers(previewObservers);
+    restartRendering();
+});
 
-    public static get poles(): number {
-        return poles;
-    }
-    public static set poles(q: number) {
-        poles = q;
-        Range.setValue(POLES_CONTROL_ID, poles);
-        callGenericObservers(clearObservers);
-    }
+const DISTANCE_TO_CONTROL_ID = "distance-to-range-id";
+let distanceTo: number = Range.getValue(DISTANCE_TO_CONTROL_ID);
+Range.addObserver(DISTANCE_TO_CONTROL_ID, (dt: number) => {
+    distanceTo = dt;
+    callGenericObservers(previewObservers);
+    restartRendering();
+});
 
-    public static get forbidRepeat(): boolean {
-        return forbidRepeat;
-    }
-    public static set forbidRepeat(f: boolean) {
-        forbidRepeat = f;
-        Checkbox.setChecked(FORBID_REPEAT_CONTROL_ID, forbidRepeat);
-        callGenericObservers(clearObservers);
-    }
-
-    public static get distance(): number {
-        return distance;
-    }
-    public static set distance(d: number) {
-        distance = d;
-        Range.setValue(DISTANCE_CONTROL_ID, distance);
-    }
-
-    public static get quality(): number {
-        return quality;
-    }
-    public static set quality(d: number) {
-        quality = d;
-        Range.setValue(QUALITY_CONTROL_ID, quality);
-    }
-
-    public static get colors(): boolean {
-        return colors;
-    }
-    public static set colors(c: boolean) {
-        colors = c;
-        Checkbox.setChecked(COLORS_CONTROL_ID, c);
-    }
-
-    public static get speed(): number {
-        return speed;
-    }
-    public static set speed(s: number) {
-        speed = s;
-        Range.setValue(SPEED_CONTROL_ID, speed);
-    }
-
-    public static get autorun(): boolean {
-        return autorun;
-    }
-    public static set autorun(a: boolean) {
-        autorun = a;
-        Checkbox.setChecked(AUTORUN_CONTROL_ID, a);
-    }
-
-    public static get downloadObservers(): DownloadObserver[] {
-        return downloadObservers;
-    }
-
-    public static get clearObservers(): GenericObserver[] {
-        return clearObservers;
-    }
-
-    public static get previewObservers(): GenericObserver[] {
-        return previewObservers;
-    }
-
-    public static get resetViewObservers(): GenericObserver[] {
-        return resetViewObservers;
-    }
-
-    public static set preset(p: number) {
-        Picker.setValue(PRESETS_CONTROL_ID, "" + p);
-        applyPreset(p);
-    }
-
-    private constructor() {}
+enum Mode {
+    FIXED = "fixed",
+    MOVEMENT = "movement",
 }
+type ModeChangeObserver = (newMode: Mode) => void;
+const modeChangeObservers: ModeChangeObserver[] = [];
+
+const MODE_CONTROL_ID = "mode";
+let mode: Mode;
+function applyMode(newMode: Mode): void {
+    if (newMode !== mode) {
+        mode = newMode;
+
+        Controls.toggleVisibility(PRESETS_CONTROL_ID, mode === Mode.FIXED);
+        Controls.toggleVisibility(DISTANCE_CONTROL_ID, mode === Mode.FIXED);
+
+        Controls.toggleVisibility(DISTANCE_FROM_CONTROL_ID, mode === Mode.MOVEMENT);
+        Controls.toggleVisibility(DISTANCE_TO_CONTROL_ID, mode === Mode.MOVEMENT);
+    
+        for (const observer of modeChangeObservers) {
+            observer(newMode);
+        }
+        restartRendering();
+    }
+}
+applyMode(Tabs.getValues(MODE_CONTROL_ID)[0] as Mode);
+Tabs.addObserver(MODE_CONTROL_ID, (v: string[]) => applyMode(v[0] as Mode));
 
 export default Parameters;

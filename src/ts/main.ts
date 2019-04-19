@@ -41,6 +41,8 @@ function main() {
         needToClearCanvas = false;
     }
 
+    let distance: number;
+
     let isPreview = false;
     let firstDraw = true;
     function mainLoop() {
@@ -60,16 +62,26 @@ function main() {
 
             if (needToDisplayPreview) {
                 const nbPoints = Math.pow(2, 17);
-                game.draw(nbPoints, 0);
+                game.draw(nbPoints, distance, 0);
                 setTotalPoints(nbPoints);
                 needToDisplayPreview = false;
                 isPreview = true;
             }
 
             if (Parameters.autorun) {
+                if (Parameters.mode === "movement") {
+                    distance += 0.002;
+    
+                    if (distance > Parameters.distanceTo) {
+                        distance = Parameters.distanceFrom;
+                    }
+                } else {
+                    distance = Parameters.distance;
+                }
+
                 const nbPoints = Math.pow(2, Parameters.speed - 1);
                 setTotalPoints(totalPoints + nbPoints);
-                game.draw(nbPoints, Parameters.quality);
+                game.draw(nbPoints, distance, Parameters.quality);
 
                 if (firstDraw) {
                     firstDraw = false;
@@ -101,15 +113,24 @@ function main() {
     }
 
     function bindEvents() {
-        Parameters.clearObservers.push(() => needToClearCanvas = true);
+        Parameters.clearObservers.push(() => {
+            needToClearCanvas = true;
+            if (Parameters.mode === "movement") {
+                distance = Parameters.distanceFrom;
+            }
+        });
         Parameters.previewObservers.push(() => needToDisplayPreview = true);
         Canvas.Observers.canvasResize.push(() => needToAdjustCanvasSize = true);
 
+        const initDistance = (mode: string) => {
+            return distance = (mode === "fixed") ? Parameters.distance : Parameters.distanceFrom;
+        };
+        initDistance(Parameters.mode);
+        Parameters.modeChangeObservers.push(initDistance);
+
         Parameters.downloadObservers.push((wantedSize: number) => {
             lockedCanvas = true;
-            const canvasHeight = Canvas.getSize()[1];
-            const nbPointsNeeded = totalPoints * Math.pow(wantedSize / canvasHeight, 2);
-            DownloadCanvas(game, wantedSize, nbPointsNeeded);
+            DownloadCanvas(game, wantedSize, totalPoints);
             lockedCanvas = false;
             needToAdjustCanvasSize = true;
         });

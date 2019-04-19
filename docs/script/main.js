@@ -164,10 +164,10 @@ var ChaosGame = (function (_super) {
             this._shader = null;
         }
     };
-    ChaosGame.prototype.draw = function (nbPoints, quality) {
+    ChaosGame.prototype.draw = function (nbPoints, distance, quality) {
         var shader = this._shader;
         if (shader) {
-            var pointsSets = this.computeXPoints(nbPoints);
+            var pointsSets = this.computeXPoints(nbPoints, distance);
             this._pointsVBO.setData(pointsSets.data);
             shader.a["aCoords"].VBO = this._pointsVBO;
             shader.use();
@@ -207,7 +207,7 @@ var ChaosGame = (function (_super) {
         }
         return poles;
     };
-    ChaosGame.prototype.computeXPoints = function (N) {
+    ChaosGame.prototype.computeXPoints = function (N, distance) {
         var nbPoles = parameters_1.default.poles;
         var chooseAnyPole = function () {
             return Math.floor(nbPoles * Math.random());
@@ -223,12 +223,11 @@ var ChaosGame = (function (_super) {
         };
         var choosePole = parameters_1.default.forbidRepeat ? chooseDifferentPole : chooseAnyPole;
         var poles = this.recomputePolesPositions(nbPoles);
-        var f = parameters_1.default.distance;
         var pos = [2 * Math.random() - 1, 2 * Math.random() - 1];
         function nextPos() {
             var pole = choosePole();
-            pos[0] += f * (poles[2 * pole + 0] - pos[0]);
-            pos[1] += f * (poles[2 * pole + 1] - pos[1]);
+            pos[0] += distance * (poles[2 * pole + 0] - pos[0]);
+            pos[1] += distance * (poles[2 * pole + 1] - pos[1]);
             return pole;
         }
         for (var i = 0; i < 500; ++i) {
@@ -350,8 +349,12 @@ var GLCanvas = __importStar(__webpack_require__(/*! ./gl-utils/gl-canvas */ "./s
 var gl_canvas_1 = __webpack_require__(/*! ./gl-utils/gl-canvas */ "./src/ts/gl-utils/gl-canvas.ts");
 var viewport_1 = __importDefault(__webpack_require__(/*! ./gl-utils/viewport */ "./src/ts/gl-utils/viewport.ts"));
 var parameters_1 = __importDefault(__webpack_require__(/*! ./parameters */ "./src/ts/parameters.ts"));
-function downloadCanvas(game, size, nbPointsNeeded) {
+function downloadCanvas(game, size, nbPointsForCurrentSize) {
     var canvas = Canvas.getCanvas();
+    var canvasHeight = Canvas.getSize()[1];
+    function adjustNbPointsForWantedSize(nbPoints) {
+        return nbPoints * Math.pow(size / canvasHeight, 2);
+    }
     function isolateCanvas() {
         Canvas.showLoader(true);
         canvas.style.position = "absolute";
@@ -371,22 +374,38 @@ function downloadCanvas(game, size, nbPointsNeeded) {
     }
     isolateCanvas();
     gl_canvas_1.gl.clear(gl_canvas_1.gl.COLOR_BUFFER_BIT);
-    var nbPoints = 0;
-    var pointsPerStep = 524288;
-    while (nbPoints < nbPointsNeeded) {
-        nbPoints += pointsPerStep;
-        game.draw(pointsPerStep, parameters_1.default.quality);
-        Canvas.setLoaderText(Math.floor(100 * nbPoints / nbPointsNeeded) + " %");
+    var nbPointsNeeded = adjustNbPointsForWantedSize(nbPointsForCurrentSize);
+    var nbPointsDrawn = 0;
+    if (parameters_1.default.mode === "fixed") {
+        var pointsPerStep = 524288;
+        var distance = parameters_1.default.distance;
+        while (nbPointsDrawn < nbPointsNeeded) {
+            nbPointsDrawn += pointsPerStep;
+            game.draw(pointsPerStep, distance, parameters_1.default.quality);
+        }
     }
+    else {
+        var pointsPerStep = adjustNbPointsForWantedSize(Math.pow(2, parameters_1.default.speed - 1));
+        var distance = parameters_1.default.distanceFrom;
+        while (nbPointsDrawn < nbPointsNeeded) {
+            distance += 0.002;
+            if (distance > parameters_1.default.distanceTo) {
+                distance = parameters_1.default.distanceFrom;
+            }
+            nbPointsDrawn += pointsPerStep;
+            game.draw(pointsPerStep, distance, parameters_1.default.quality);
+        }
+    }
+    var downloadedName = "chaos-game.png";
     if (canvas.msToBlob) {
         var blob = canvas.msToBlob();
-        window.navigator.msSaveBlob(blob, "chaos-game.png");
+        window.navigator.msSaveBlob(blob, downloadedName);
         restoreCanvas();
     }
     else {
         canvas.toBlob(function (blob) {
             var link = document.createElement("a");
-            link.download = "chaos-game.png";
+            link.download = downloadedName;
             link.href = URL.createObjectURL(blob);
             link.click();
             restoreCanvas();
@@ -1050,6 +1069,7 @@ function main() {
         setTotalPoints(0);
         needToClearCanvas = false;
     }
+    var distance;
     var isPreview = false;
     var firstDraw = true;
     function mainLoop() {
@@ -1067,15 +1087,24 @@ function main() {
             }
             if (needToDisplayPreview) {
                 var nbPoints = Math.pow(2, 17);
-                game.draw(nbPoints, 0);
+                game.draw(nbPoints, distance, 0);
                 setTotalPoints(nbPoints);
                 needToDisplayPreview = false;
                 isPreview = true;
             }
             if (parameters_1.default.autorun) {
+                if (parameters_1.default.mode === "movement") {
+                    distance += 0.002;
+                    if (distance > parameters_1.default.distanceTo) {
+                        distance = parameters_1.default.distanceFrom;
+                    }
+                }
+                else {
+                    distance = parameters_1.default.distance;
+                }
                 var nbPoints = Math.pow(2, parameters_1.default.speed - 1);
                 setTotalPoints(totalPoints + nbPoints);
-                game.draw(nbPoints, parameters_1.default.quality);
+                game.draw(nbPoints, distance, parameters_1.default.quality);
                 if (firstDraw) {
                     firstDraw = false;
                     Canvas.showLoader(false);
@@ -1101,14 +1130,22 @@ function main() {
         gl_canvas_1.gl.blendFunc(gl_canvas_1.gl.ONE, gl_canvas_1.gl.ONE);
     }
     function bindEvents() {
-        parameters_1.default.clearObservers.push(function () { return needToClearCanvas = true; });
+        parameters_1.default.clearObservers.push(function () {
+            needToClearCanvas = true;
+            if (parameters_1.default.mode === "movement") {
+                distance = parameters_1.default.distanceFrom;
+            }
+        });
         parameters_1.default.previewObservers.push(function () { return needToDisplayPreview = true; });
         Canvas.Observers.canvasResize.push(function () { return needToAdjustCanvasSize = true; });
+        var initDistance = function (mode) {
+            return distance = (mode === "fixed") ? parameters_1.default.distance : parameters_1.default.distanceFrom;
+        };
+        initDistance(parameters_1.default.mode);
+        parameters_1.default.modeChangeObservers.push(initDistance);
         parameters_1.default.downloadObservers.push(function (wantedSize) {
             lockedCanvas = true;
-            var canvasHeight = Canvas.getSize()[1];
-            var nbPointsNeeded = totalPoints * Math.pow(wantedSize / canvasHeight, 2);
-            downloader_1.default(game, wantedSize, nbPointsNeeded);
+            downloader_1.default(game, wantedSize, totalPoints);
             lockedCanvas = false;
             needToAdjustCanvasSize = true;
         });
@@ -1137,6 +1174,165 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var Presets = __importStar(__webpack_require__(/*! ./presets */ "./src/ts/presets.ts"));
+var Parameters = (function () {
+    function Parameters() {
+    }
+    Object.defineProperty(Parameters, "scale", {
+        get: function () {
+            return scale;
+        },
+        set: function (s) {
+            scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, s));
+            callGenericObservers(clearObservers);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Parameters, "poles", {
+        get: function () {
+            return poles;
+        },
+        set: function (q) {
+            poles = q;
+            Range.setValue(POLES_CONTROL_ID, poles);
+            callGenericObservers(clearObservers);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Parameters, "forbidRepeat", {
+        get: function () {
+            return forbidRepeat;
+        },
+        set: function (f) {
+            forbidRepeat = f;
+            Checkbox.setChecked(FORBID_REPEAT_CONTROL_ID, forbidRepeat);
+            callGenericObservers(clearObservers);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Parameters, "distance", {
+        get: function () {
+            return distance;
+        },
+        set: function (d) {
+            distance = d;
+            Range.setValue(DISTANCE_CONTROL_ID, distance);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Parameters, "distanceTo", {
+        get: function () {
+            return distanceTo;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Parameters, "distanceFrom", {
+        get: function () {
+            return distanceFrom;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Parameters, "quality", {
+        get: function () {
+            return quality;
+        },
+        set: function (d) {
+            quality = d;
+            Range.setValue(QUALITY_CONTROL_ID, quality);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Parameters, "colors", {
+        get: function () {
+            return colors;
+        },
+        set: function (c) {
+            colors = c;
+            Checkbox.setChecked(COLORS_CONTROL_ID, c);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Parameters, "speed", {
+        get: function () {
+            return speed;
+        },
+        set: function (s) {
+            speed = s;
+            Range.setValue(SPEED_CONTROL_ID, speed);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Parameters, "autorun", {
+        get: function () {
+            return autorun;
+        },
+        set: function (a) {
+            autorun = a;
+            Checkbox.setChecked(AUTORUN_CONTROL_ID, a);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Parameters, "downloadObservers", {
+        get: function () {
+            return downloadObservers;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Parameters, "clearObservers", {
+        get: function () {
+            return clearObservers;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Parameters, "previewObservers", {
+        get: function () {
+            return previewObservers;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Parameters, "resetViewObservers", {
+        get: function () {
+            return resetViewObservers;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Parameters, "preset", {
+        set: function (p) {
+            Picker.setValue(PRESETS_CONTROL_ID, "" + p);
+            applyPreset(p);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Parameters, "mode", {
+        get: function () {
+            return mode;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Parameters, "modeChangeObservers", {
+        get: function () {
+            return modeChangeObservers;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return Parameters;
+}());
 var downloadObservers = [];
 FileControl.addDownloadObserver("result-download-id", function () {
     var size = +Tabs.getValues("result-dimensions")[0];
@@ -1239,137 +1435,44 @@ function applyPreset(presetId) {
 }
 Picker.addObserver(PRESETS_CONTROL_ID, applyPreset);
 applyPreset(Picker.getValue(PRESETS_CONTROL_ID));
-var Parameters = (function () {
-    function Parameters() {
+var DISTANCE_FROM_CONTROL_ID = "distance-from-range-id";
+var distanceFrom = Range.getValue(DISTANCE_FROM_CONTROL_ID);
+Range.addObserver(DISTANCE_FROM_CONTROL_ID, function (df) {
+    distanceFrom = df;
+    callGenericObservers(previewObservers);
+    restartRendering();
+});
+var DISTANCE_TO_CONTROL_ID = "distance-to-range-id";
+var distanceTo = Range.getValue(DISTANCE_TO_CONTROL_ID);
+Range.addObserver(DISTANCE_TO_CONTROL_ID, function (dt) {
+    distanceTo = dt;
+    callGenericObservers(previewObservers);
+    restartRendering();
+});
+var Mode;
+(function (Mode) {
+    Mode["FIXED"] = "fixed";
+    Mode["MOVEMENT"] = "movement";
+})(Mode || (Mode = {}));
+var modeChangeObservers = [];
+var MODE_CONTROL_ID = "mode";
+var mode;
+function applyMode(newMode) {
+    if (newMode !== mode) {
+        mode = newMode;
+        Controls.toggleVisibility(PRESETS_CONTROL_ID, mode === Mode.FIXED);
+        Controls.toggleVisibility(DISTANCE_CONTROL_ID, mode === Mode.FIXED);
+        Controls.toggleVisibility(DISTANCE_FROM_CONTROL_ID, mode === Mode.MOVEMENT);
+        Controls.toggleVisibility(DISTANCE_TO_CONTROL_ID, mode === Mode.MOVEMENT);
+        for (var _i = 0, modeChangeObservers_1 = modeChangeObservers; _i < modeChangeObservers_1.length; _i++) {
+            var observer = modeChangeObservers_1[_i];
+            observer(newMode);
+        }
+        restartRendering();
     }
-    Object.defineProperty(Parameters, "scale", {
-        get: function () {
-            return scale;
-        },
-        set: function (s) {
-            scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, s));
-            callGenericObservers(clearObservers);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Parameters, "poles", {
-        get: function () {
-            return poles;
-        },
-        set: function (q) {
-            poles = q;
-            Range.setValue(POLES_CONTROL_ID, poles);
-            callGenericObservers(clearObservers);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Parameters, "forbidRepeat", {
-        get: function () {
-            return forbidRepeat;
-        },
-        set: function (f) {
-            forbidRepeat = f;
-            Checkbox.setChecked(FORBID_REPEAT_CONTROL_ID, forbidRepeat);
-            callGenericObservers(clearObservers);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Parameters, "distance", {
-        get: function () {
-            return distance;
-        },
-        set: function (d) {
-            distance = d;
-            Range.setValue(DISTANCE_CONTROL_ID, distance);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Parameters, "quality", {
-        get: function () {
-            return quality;
-        },
-        set: function (d) {
-            quality = d;
-            Range.setValue(QUALITY_CONTROL_ID, quality);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Parameters, "colors", {
-        get: function () {
-            return colors;
-        },
-        set: function (c) {
-            colors = c;
-            Checkbox.setChecked(COLORS_CONTROL_ID, c);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Parameters, "speed", {
-        get: function () {
-            return speed;
-        },
-        set: function (s) {
-            speed = s;
-            Range.setValue(SPEED_CONTROL_ID, speed);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Parameters, "autorun", {
-        get: function () {
-            return autorun;
-        },
-        set: function (a) {
-            autorun = a;
-            Checkbox.setChecked(AUTORUN_CONTROL_ID, a);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Parameters, "downloadObservers", {
-        get: function () {
-            return downloadObservers;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Parameters, "clearObservers", {
-        get: function () {
-            return clearObservers;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Parameters, "previewObservers", {
-        get: function () {
-            return previewObservers;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Parameters, "resetViewObservers", {
-        get: function () {
-            return resetViewObservers;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Parameters, "preset", {
-        set: function (p) {
-            Picker.setValue(PRESETS_CONTROL_ID, "" + p);
-            applyPreset(p);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    return Parameters;
-}());
+}
+applyMode(Tabs.getValues(MODE_CONTROL_ID)[0]);
+Tabs.addObserver(MODE_CONTROL_ID, function (v) { return applyMode(v[0]); });
 exports.default = Parameters;
 
 
