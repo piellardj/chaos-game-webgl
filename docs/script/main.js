@@ -1174,6 +1174,47 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var Presets = __importStar(__webpack_require__(/*! ./presets */ "./src/ts/presets.ts"));
+function clamp(x, minVal, maxVal) {
+    return Math.min(maxVal, Math.max(minVal, x));
+}
+var controlId = {
+    AUTORUN: "autorun-checkbox-id",
+    RESET: "reset-button-id",
+    SPEED: "speed-range-id",
+    QUALITY: "quality-range-id",
+    COLORS: "colors-checkbox-id",
+    MODE: "mode",
+    PRESETS: "presets-picker-id",
+    POLES: "poles-range-id",
+    DISTANCE: "distance-range-id",
+    DISTANCE_FROM: "distance-from-range-id",
+    DISTANCE_TO: "distance-to-range-id",
+    FORBID_REPEAT: "forbid-repeat-checkbox-id",
+    RESULT_SIZE: "result-dimensions",
+    DOWNLOAD: "result-download-id",
+};
+function callObservers(observersList) {
+    for (var _i = 0, observersList_1 = observersList; _i < observersList_1.length; _i++) {
+        var observer = observersList_1[_i];
+        observer();
+    }
+}
+var observers = {
+    clear: [],
+    download: [],
+    preview: [],
+    resetView: [],
+};
+FileControl.addDownloadObserver(controlId.DOWNLOAD, function () {
+    var size = +Tabs.getValues(controlId.RESULT_SIZE)[0];
+    for (var _i = 0, _a = observers.download; _i < _a.length; _i++) {
+        var observer = _a[_i];
+        observer(size);
+    }
+});
+Button.addObserver(controlId.RESET, function () { return callObservers(observers.clear); });
+Canvas.Observers.mouseDrag.push(function () { return callObservers(observers.clear); });
+Canvas.Observers.mouseDrag.push(function () { return callObservers(observers.preview); });
 var Parameters = (function () {
     function Parameters() {
     }
@@ -1182,90 +1223,8 @@ var Parameters = (function () {
             return scale;
         },
         set: function (s) {
-            scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, s));
-            callGenericObservers(clearObservers);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Parameters, "poles", {
-        get: function () {
-            return poles;
-        },
-        set: function (q) {
-            poles = q;
-            Range.setValue(POLES_CONTROL_ID, poles);
-            callGenericObservers(clearObservers);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Parameters, "forbidRepeat", {
-        get: function () {
-            return forbidRepeat;
-        },
-        set: function (f) {
-            forbidRepeat = f;
-            Checkbox.setChecked(FORBID_REPEAT_CONTROL_ID, forbidRepeat);
-            callGenericObservers(clearObservers);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Parameters, "distance", {
-        get: function () {
-            return distance;
-        },
-        set: function (d) {
-            distance = d;
-            Range.setValue(DISTANCE_CONTROL_ID, distance);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Parameters, "distanceTo", {
-        get: function () {
-            return distanceTo;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Parameters, "distanceFrom", {
-        get: function () {
-            return distanceFrom;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Parameters, "quality", {
-        get: function () {
-            return quality;
-        },
-        set: function (d) {
-            quality = d;
-            Range.setValue(QUALITY_CONTROL_ID, quality);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Parameters, "colors", {
-        get: function () {
-            return colors;
-        },
-        set: function (c) {
-            colors = c;
-            Checkbox.setChecked(COLORS_CONTROL_ID, c);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Parameters, "speed", {
-        get: function () {
-            return speed;
-        },
-        set: function (s) {
-            speed = s;
-            Range.setValue(SPEED_CONTROL_ID, speed);
+            scale = clamp(s, MIN_SCALE, MAX_SCALE);
+            callObservers(observers.clear);
         },
         enumerable: true,
         configurable: true
@@ -1276,43 +1235,40 @@ var Parameters = (function () {
         },
         set: function (a) {
             autorun = a;
-            Checkbox.setChecked(AUTORUN_CONTROL_ID, a);
+            Checkbox.setChecked(controlId.AUTORUN, a);
         },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(Parameters, "downloadObservers", {
+    Object.defineProperty(Parameters, "speed", {
         get: function () {
-            return downloadObservers;
+            return speed;
+        },
+        set: function (s) {
+            speed = s;
+            Range.setValue(controlId.SPEED, speed);
         },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(Parameters, "clearObservers", {
+    Object.defineProperty(Parameters, "quality", {
         get: function () {
-            return clearObservers;
+            return quality;
+        },
+        set: function (d) {
+            quality = d;
+            Range.setValue(controlId.QUALITY, quality);
         },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(Parameters, "previewObservers", {
+    Object.defineProperty(Parameters, "colors", {
         get: function () {
-            return previewObservers;
+            return colors;
         },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Parameters, "resetViewObservers", {
-        get: function () {
-            return resetViewObservers;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(Parameters, "preset", {
-        set: function (p) {
-            Picker.setValue(PRESETS_CONTROL_ID, "" + p);
-            applyPreset(p);
+        set: function (c) {
+            colors = c;
+            Checkbox.setChecked(controlId.COLORS, c);
         },
         enumerable: true,
         configurable: true
@@ -1331,122 +1287,182 @@ var Parameters = (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(Parameters, "preset", {
+        set: function (p) {
+            Picker.setValue(controlId.PRESETS, "" + p);
+            applyPreset(p);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Parameters, "poles", {
+        get: function () {
+            return poles;
+        },
+        set: function (q) {
+            poles = q;
+            Range.setValue(controlId.POLES, poles);
+            callObservers(observers.clear);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Parameters, "distance", {
+        get: function () {
+            return distance;
+        },
+        set: function (d) {
+            distance = d;
+            Range.setValue(controlId.DISTANCE, distance);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Parameters, "distanceFrom", {
+        get: function () {
+            return distanceFrom;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Parameters, "distanceTo", {
+        get: function () {
+            return distanceTo;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Parameters, "forbidRepeat", {
+        get: function () {
+            return forbidRepeat;
+        },
+        set: function (f) {
+            forbidRepeat = f;
+            Checkbox.setChecked(controlId.FORBID_REPEAT, forbidRepeat);
+            callObservers(observers.clear);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Parameters, "downloadObservers", {
+        get: function () {
+            return observers.download;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Parameters, "clearObservers", {
+        get: function () {
+            return observers.clear;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Parameters, "previewObservers", {
+        get: function () {
+            return observers.preview;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Parameters, "resetViewObservers", {
+        get: function () {
+            return observers.resetView;
+        },
+        enumerable: true,
+        configurable: true
+    });
     return Parameters;
 }());
-var downloadObservers = [];
-FileControl.addDownloadObserver("result-download-id", function () {
-    var size = +Tabs.getValues("result-dimensions")[0];
-    for (var _i = 0, downloadObservers_1 = downloadObservers; _i < downloadObservers_1.length; _i++) {
-        var observer = downloadObservers_1[_i];
-        observer(size);
-    }
-});
-function callGenericObservers(list) {
-    for (var _i = 0, list_1 = list; _i < list_1.length; _i++) {
-        var observer = list_1[_i];
-        observer();
-    }
-}
-var clearObservers = [];
-var RESET_CONTROL_ID = "reset-button-id";
-Button.addObserver(RESET_CONTROL_ID, function () { return callGenericObservers(clearObservers); });
-Canvas.Observers.mouseDrag.push(function () { return callGenericObservers(clearObservers); });
-var previewObservers = [];
-Canvas.Observers.mouseDrag.push(function () { return callGenericObservers(previewObservers); });
-var resetViewObservers = [];
 function restartRendering() {
-    callGenericObservers(clearObservers);
+    callObservers(observers.clear);
     Parameters.autorun = true;
 }
 var scale = 1.0;
 var MIN_SCALE = 0.05;
 var MAX_SCALE = 4.0;
 Canvas.Observers.mouseWheel.push(function (delta, zoomCenter) {
-    var newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale * (1 + 0.2 * delta)));
+    var newScale = clamp(scale * (1 + 0.2 * delta), MIN_SCALE, MAX_SCALE);
     if (newScale !== scale) {
         scale = newScale;
         restartRendering();
     }
 });
-var POLES_CONTROL_ID = "poles-range-id";
-var poles = Range.getValue(POLES_CONTROL_ID);
-Range.addObserver(POLES_CONTROL_ID, function (p) {
-    poles = p;
-    clearPreset();
-    restartRendering();
-    callGenericObservers(resetViewObservers);
+var autorun = Checkbox.isChecked(controlId.AUTORUN);
+Checkbox.addObserver(controlId.AUTORUN, function (checked) {
+    autorun = checked;
 });
-var DISTANCE_CONTROL_ID = "distance-range-id";
-var distance = Range.getValue(DISTANCE_CONTROL_ID);
-Range.addObserver(DISTANCE_CONTROL_ID, function (d) {
-    distance = d;
-    clearPreset();
-    restartRendering();
+var speed = Range.getValue(controlId.SPEED);
+Range.addObserver(controlId.SPEED, function (s) {
+    speed = s;
 });
-var QUALITY_CONTROL_ID = "quality-range-id";
-var quality = Range.getValue(QUALITY_CONTROL_ID);
-Range.addObserver(QUALITY_CONTROL_ID, function (q) {
+var quality = Range.getValue(controlId.QUALITY);
+Range.addObserver(controlId.QUALITY, function (q) {
     quality = q;
     restartRendering();
 });
-var SPEED_CONTROL_ID = "speed-range-id";
-var speed = Range.getValue(SPEED_CONTROL_ID);
-Range.addObserver(SPEED_CONTROL_ID, function (s) {
-    speed = s;
-    restartRendering();
-});
-var AUTORUN_CONTROL_ID = "autorun-checkbox-id";
-var autorun = Checkbox.isChecked(AUTORUN_CONTROL_ID);
-Checkbox.addObserver(AUTORUN_CONTROL_ID, function (checked) {
-    autorun = checked;
-});
-var COLORS_CONTROL_ID = "colors-checkbox-id";
-var colors = Checkbox.isChecked(COLORS_CONTROL_ID);
-Checkbox.addObserver(COLORS_CONTROL_ID, function (checked) {
+var colors = Checkbox.isChecked(controlId.COLORS);
+Checkbox.addObserver(controlId.COLORS, function (checked) {
     colors = checked;
     restartRendering();
 });
-var FORBID_REPEAT_CONTROL_ID = "forbid-repeat-checkbox-id";
-var forbidRepeat = Checkbox.isChecked(FORBID_REPEAT_CONTROL_ID);
-Checkbox.addObserver(FORBID_REPEAT_CONTROL_ID, function (checked) {
-    forbidRepeat = checked;
-    clearPreset();
-    restartRendering();
-});
-var isPreset = true;
-var PRESETS_CONTROL_ID = "presets-picker-id";
+var presetId = -1;
 function clearPreset() {
-    if (isPreset) {
-        isPreset = false;
-        Picker.setValue(PRESETS_CONTROL_ID, null);
+    if (presetId >= 0) {
+        presetId = -1;
+        Picker.setValue(controlId.PRESETS, null);
     }
 }
-function applyPreset(presetId) {
-    if (presetId !== null) {
-        isPreset = true;
-        var preset = Presets.getPreset(presetId);
+function applyPreset(newPresetId) {
+    if (newPresetId >= 0) {
+        presetId = newPresetId;
+        var preset = Presets.getPreset(newPresetId);
         Parameters.poles = preset.poles;
         Parameters.distance = preset.distance;
         Parameters.forbidRepeat = preset.forbidRepeat;
         Parameters.scale = preset.scale;
         restartRendering();
-        callGenericObservers(resetViewObservers);
+        callObservers(observers.resetView);
     }
 }
-Picker.addObserver(PRESETS_CONTROL_ID, applyPreset);
-applyPreset(Picker.getValue(PRESETS_CONTROL_ID));
-var DISTANCE_FROM_CONTROL_ID = "distance-from-range-id";
-var distanceFrom = Range.getValue(DISTANCE_FROM_CONTROL_ID);
-Range.addObserver(DISTANCE_FROM_CONTROL_ID, function (df) {
-    distanceFrom = df;
-    callGenericObservers(previewObservers);
+Picker.addObserver(controlId.PRESETS, function (v) {
+    if (v === null) {
+        presetId = -1;
+    }
+    else {
+        applyPreset(+v);
+    }
+});
+applyPreset(+Picker.getValue(controlId.PRESETS));
+var poles = Range.getValue(controlId.POLES);
+Range.addObserver(controlId.POLES, function (p) {
+    poles = p;
+    clearPreset();
+    restartRendering();
+    callObservers(observers.resetView);
+});
+var distance = Range.getValue(controlId.DISTANCE);
+Range.addObserver(controlId.DISTANCE, function (d) {
+    distance = d;
+    clearPreset();
     restartRendering();
 });
-var DISTANCE_TO_CONTROL_ID = "distance-to-range-id";
-var distanceTo = Range.getValue(DISTANCE_TO_CONTROL_ID);
-Range.addObserver(DISTANCE_TO_CONTROL_ID, function (dt) {
+var distanceFrom = Range.getValue(controlId.DISTANCE_FROM);
+Range.addObserver(controlId.DISTANCE_FROM, function (df) {
+    distanceFrom = df;
+    callObservers(observers.preview);
+    restartRendering();
+});
+var distanceTo = Range.getValue(controlId.DISTANCE_TO);
+Range.addObserver(controlId.DISTANCE_TO, function (dt) {
     distanceTo = dt;
-    callGenericObservers(previewObservers);
+    callObservers(observers.preview);
+    restartRendering();
+});
+var forbidRepeat = Checkbox.isChecked(controlId.FORBID_REPEAT);
+Checkbox.addObserver(controlId.FORBID_REPEAT, function (checked) {
+    forbidRepeat = checked;
+    clearPreset();
     restartRendering();
 });
 var Mode;
@@ -1455,15 +1471,14 @@ var Mode;
     Mode["MOVEMENT"] = "movement";
 })(Mode || (Mode = {}));
 var modeChangeObservers = [];
-var MODE_CONTROL_ID = "mode";
 var mode;
 function applyMode(newMode) {
     if (newMode !== mode) {
         mode = newMode;
-        Controls.toggleVisibility(PRESETS_CONTROL_ID, mode === Mode.FIXED);
-        Controls.toggleVisibility(DISTANCE_CONTROL_ID, mode === Mode.FIXED);
-        Controls.toggleVisibility(DISTANCE_FROM_CONTROL_ID, mode === Mode.MOVEMENT);
-        Controls.toggleVisibility(DISTANCE_TO_CONTROL_ID, mode === Mode.MOVEMENT);
+        Controls.toggleVisibility(controlId.PRESETS, mode === Mode.FIXED);
+        Controls.toggleVisibility(controlId.DISTANCE, mode === Mode.FIXED);
+        Controls.toggleVisibility(controlId.DISTANCE_FROM, mode === Mode.MOVEMENT);
+        Controls.toggleVisibility(controlId.DISTANCE_TO, mode === Mode.MOVEMENT);
         for (var _i = 0, modeChangeObservers_1 = modeChangeObservers; _i < modeChangeObservers_1.length; _i++) {
             var observer = modeChangeObservers_1[_i];
             observer(newMode);
@@ -1471,8 +1486,8 @@ function applyMode(newMode) {
         restartRendering();
     }
 }
-applyMode(Tabs.getValues(MODE_CONTROL_ID)[0]);
-Tabs.addObserver(MODE_CONTROL_ID, function (v) { return applyMode(v[0]); });
+applyMode(Tabs.getValues(controlId.MODE)[0]);
+Tabs.addObserver(controlId.MODE, function (v) { return applyMode(v[0]); });
 exports.default = Parameters;
 
 
