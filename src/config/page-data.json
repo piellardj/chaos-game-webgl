@@ -3,7 +3,7 @@
     "description": "WebGL implementation of the Chaos game.",
     "introduction": [
         "The Chaos Game is an iterative way of drawing fractals using a number of fixed invisible points called attractors and a single point that is repeatedly moved and drawn on the canvas. The initial position of the point is picked randomly on the canvas, and then the next position is computed as follow: a random attractor is chosen and the point is moved a fraction of the distance towards this attractor.",
-        "You can discover lots of different fractals by slightly modifying the parameters: number of attractors, distance used to move the point and a restriction on the choice of the attractor depending on previous choices. Moreover, the simulation can run in an additional mode where the distance slowly drifts, resulting in flower-like patterns.",
+        "You can discover lots of different fractals by slightly modifying the parameters: number of attractors, distance used to move the point and restriction on the choice of the attractor depending on previous choices. Moreover, the simulation can run in an additional mode where the distance slowly drifts, resulting in flower-like patterns.",
         "You can also zoom in and explore the fractals with the mouse.",
         "This project runs on CPU and is rendered using WebGL."
     ],
@@ -78,14 +78,14 @@
                         },
                         {
                             "value": "movement",
-                            "label": "Drift"
+                            "label": "Moving"
                         }
                     ]
                 },
                 {
                     "title": "Preset",
                     "type": "picker",
-                    "id": "presets-picker-id",
+                    "id": "presets-fixed-picker-id",
                     "placeholder": "Custom",
                     "options": [
                         {
@@ -171,6 +171,34 @@
                         {
                             "value": "20",
                             "label": "Spirals"
+                        }
+                    ]
+                },
+                {
+                    "title": "Preset",
+                    "type": "picker",
+                    "id": "presets-movement-picker-id",
+                    "placeholder": "Custom",
+                    "options": [
+                        {
+                            "value": "0",
+                            "label": "Triangle outer"
+                        },
+                        {
+                            "value": "1",
+                            "label": "Pentagon inner"
+                        },
+                        {
+                            "value": "2",
+                            "label": "Palms"
+                        },
+                        {
+                            "value": "3",
+                            "label": "Triangle side"
+                        },
+                        {
+                            "value": "4",
+                            "label": "Star"
                         }
                     ]
                 },

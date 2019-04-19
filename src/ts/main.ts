@@ -18,7 +18,8 @@ function main() {
     Parameters.speed = 17;
     Parameters.autorun = true;
     Parameters.colors = false;
-    Parameters.preset = 15;
+    Parameters.presetFixed = 15;
+    Parameters.presetMovement = 0;
 
     let needToAdjustCanvasSize = true;
     let needToClearCanvas = true;

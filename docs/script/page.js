@@ -931,8 +931,9 @@ const Picker = (function() {
     /**
      *  Updates selector text and disables/enables buttons if needed.
      *  @param {object} picker
+     *  @param {boolean} callObservers
      */
-    function updateVisibleValue(picker) {
+    function updateVisibleValue(picker, callObservers) {
         const index = getIndexOfCheckedInput(picker);
         let selectedLabel;
         let selectedValue = null;
@@ -954,8 +955,10 @@ const Picker = (function() {
                 !picker.inputs[picker.inputs.length - 1].checked);
         }
 
-        for (let i = 0; i < picker.observers.length; ++i) {
-            picker.observers[i](selectedValue);
+        if (callObservers) {
+            for (let i = 0; i < picker.observers.length; ++i) {
+                picker.observers[i](selectedValue);
+            }
         }
     }
 
@@ -981,7 +984,7 @@ const Picker = (function() {
                     picker.inputs[index - 1].checked = true;
                 }
 
-                updateVisibleValue(picker);
+                updateVisibleValue(picker, true);
             }
         });
 
@@ -995,11 +998,11 @@ const Picker = (function() {
                     picker.inputs[index + 1].checked = true;
                 }
 
-                updateVisibleValue(picker);
+                updateVisibleValue(picker, true);
             }
         });
 
-        updateVisibleValue(picker);
+        updateVisibleValue(picker, true);
     }
 
     buildPickersDictionary();
@@ -1036,7 +1039,7 @@ const Picker = (function() {
             for (let i = 0; i < picker.inputs.length; ++i) {
                 picker.inputs[i].checked = (picker.inputs[i].value === value);
             }
-            updateVisibleValue(picker);
+            updateVisibleValue(picker, false);
         },
     });
 })();

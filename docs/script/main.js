@@ -1041,7 +1041,8 @@ function main() {
     parameters_1.default.speed = 17;
     parameters_1.default.autorun = true;
     parameters_1.default.colors = false;
-    parameters_1.default.preset = 15;
+    parameters_1.default.presetFixed = 15;
+    parameters_1.default.presetMovement = 0;
     var needToAdjustCanvasSize = true;
     var needToClearCanvas = true;
     var needToDisplayPreview = false;
@@ -1163,7 +1164,8 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var Presets = __importStar(__webpack_require__(/*! ./presets */ "./src/ts/presets.ts"));
+var PresetsFixed = __importStar(__webpack_require__(/*! ./presets-fixed */ "./src/ts/presets-fixed.ts"));
+var PresetsMovement = __importStar(__webpack_require__(/*! ./presets-movement */ "./src/ts/presets-movement.ts"));
 function clamp(x, minVal, maxVal) {
     return Math.min(maxVal, Math.max(minVal, x));
 }
@@ -1174,7 +1176,8 @@ var controlId = {
     QUALITY: "quality-range-id",
     COLORS: "colors-checkbox-id",
     MODE: "mode",
-    PRESETS: "presets-picker-id",
+    PRESETS_FIXED: "presets-fixed-picker-id",
+    PRESETS_MOVEMENT: "presets-movement-picker-id",
     POLES: "poles-range-id",
     DISTANCE: "distance-range-id",
     DISTANCE_FROM: "distance-from-range-id",
@@ -1278,10 +1281,18 @@ var Parameters = (function () {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(Parameters, "preset", {
+    Object.defineProperty(Parameters, "presetFixed", {
         set: function (p) {
-            Picker.setValue(controlId.PRESETS, "" + p);
-            applyPreset(p);
+            Picker.setValue(controlId.PRESETS_FIXED, "" + p);
+            applyPresetFixed(p);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Parameters, "presetMovement", {
+        set: function (p) {
+            Picker.setValue(controlId.PRESETS_MOVEMENT, "" + p);
+            applyPresetMovement(p);
         },
         enumerable: true,
         configurable: true
@@ -1304,7 +1315,7 @@ var Parameters = (function () {
         },
         set: function (d) {
             distance = d;
-            Range.setValue(controlId.DISTANCE, distance);
+            Range.setValue(controlId.DISTANCE, d);
         },
         enumerable: true,
         configurable: true
@@ -1313,12 +1324,20 @@ var Parameters = (function () {
         get: function () {
             return distanceFrom;
         },
+        set: function (d) {
+            distanceFrom = d;
+            Range.setValue(controlId.DISTANCE_FROM, d);
+        },
         enumerable: true,
         configurable: true
     });
     Object.defineProperty(Parameters, "distanceTo", {
         get: function () {
             return distanceTo;
+        },
+        set: function (d) {
+            distanceTo = d;
+            Range.setValue(controlId.DISTANCE_TO, d);
         },
         enumerable: true,
         configurable: true
@@ -1396,17 +1415,17 @@ Checkbox.addObserver(controlId.COLORS, function (checked) {
     colors = checked;
     restartRendering();
 });
-var presetId = -1;
-function clearPreset() {
-    if (presetId >= 0) {
-        presetId = -1;
-        Picker.setValue(controlId.PRESETS, null);
+var presetFixedId = -1;
+function clearPresetFixed() {
+    if (presetFixedId >= 0) {
+        presetFixedId = -1;
+        Picker.setValue(controlId.PRESETS_FIXED, null);
     }
 }
-function applyPreset(newPresetId) {
+function applyPresetFixed(newPresetId) {
     if (newPresetId >= 0) {
-        presetId = newPresetId;
-        var preset = Presets.getPreset(newPresetId);
+        presetFixedId = newPresetId;
+        var preset = PresetsFixed.getPreset(newPresetId);
         Parameters.poles = preset.poles;
         Parameters.distance = preset.distance;
         Parameters.restriction = preset.restriction;
@@ -1415,44 +1434,70 @@ function applyPreset(newPresetId) {
         callObservers(observers.resetView);
     }
 }
-Picker.addObserver(controlId.PRESETS, function (v) {
+Picker.addObserver(controlId.PRESETS_FIXED, function (v) {
     if (v === null) {
-        presetId = -1;
+        presetFixedId = -1;
     }
     else {
-        applyPreset(+v);
+        applyPresetFixed(+v);
     }
 });
-applyPreset(+Picker.getValue(controlId.PRESETS));
+applyPresetFixed(+Picker.getValue(controlId.PRESETS_FIXED));
+var presetMovementId = -1;
+function clearPresetMovement() {
+    if (presetMovementId >= 0) {
+        presetMovementId = -1;
+        Picker.setValue(controlId.PRESETS_MOVEMENT, null);
+    }
+}
+function applyPresetMovement(newPresetId) {
+    if (newPresetId >= 0) {
+        presetMovementId = newPresetId;
+        var preset = PresetsMovement.getPreset(newPresetId);
+        Parameters.poles = preset.poles;
+        Parameters.distanceFrom = preset.distanceFrom;
+        Parameters.distanceTo = preset.distanceTo;
+        Parameters.restriction = preset.restriction;
+        Parameters.scale = preset.scale;
+        restartRendering();
+        callObservers(observers.resetView);
+    }
+}
+Picker.addObserver(controlId.PRESETS_MOVEMENT, function (v) {
+    if (v === null) {
+        presetMovementId = -1;
+    }
+    else {
+        applyPresetMovement(+v);
+    }
+});
+applyPresetMovement(+Picker.getValue(controlId.PRESETS_MOVEMENT));
 var poles = Range.getValue(controlId.POLES);
 Range.addObserver(controlId.POLES, function (p) {
     poles = p;
-    clearPreset();
+    clearPresetFixed();
+    clearPresetMovement();
     restartRendering();
     callObservers(observers.resetView);
 });
 var distance = Range.getValue(controlId.DISTANCE);
 Range.addObserver(controlId.DISTANCE, function (d) {
     distance = d;
-    clearPreset();
+    clearPresetFixed();
     restartRendering();
 });
 var distanceFrom = Range.getValue(controlId.DISTANCE_FROM);
 Range.addObserver(controlId.DISTANCE_FROM, function (df) {
     distanceFrom = df;
+    clearPresetMovement();
     callObservers(observers.preview);
     restartRendering();
 });
 var distanceTo = Range.getValue(controlId.DISTANCE_TO);
 Range.addObserver(controlId.DISTANCE_TO, function (dt) {
     distanceTo = dt;
+    clearPresetMovement();
     callObservers(observers.preview);
-    restartRendering();
-});
-var forbidRepeat = Checkbox.isChecked(controlId.FORBID_REPEAT);
-Checkbox.addObserver(controlId.FORBID_REPEAT, function (checked) {
-    forbidRepeat = checked;
-    clearPreset();
     restartRendering();
 });
 var Mode;
@@ -1465,10 +1510,24 @@ var mode;
 function applyMode(newMode) {
     if (newMode !== mode) {
         mode = newMode;
-        Controls.toggleVisibility(controlId.PRESETS, mode === Mode.FIXED);
-        Controls.toggleVisibility(controlId.DISTANCE, mode === Mode.FIXED);
-        Controls.toggleVisibility(controlId.DISTANCE_FROM, mode === Mode.MOVEMENT);
-        Controls.toggleVisibility(controlId.DISTANCE_TO, mode === Mode.MOVEMENT);
+        var isFixed = mode === Mode.FIXED;
+        if (isFixed) {
+            var presetId = Picker.getValue(controlId.PRESETS_FIXED);
+            if (presetId) {
+                applyPresetFixed(+presetId);
+            }
+        }
+        else {
+            var presetId = Picker.getValue(controlId.PRESETS_MOVEMENT);
+            if (presetId) {
+                applyPresetMovement(+presetId);
+            }
+        }
+        Controls.toggleVisibility(controlId.PRESETS_FIXED, isFixed);
+        Controls.toggleVisibility(controlId.DISTANCE, isFixed);
+        Controls.toggleVisibility(controlId.PRESETS_MOVEMENT, !isFixed);
+        Controls.toggleVisibility(controlId.DISTANCE_FROM, !isFixed);
+        Controls.toggleVisibility(controlId.DISTANCE_TO, !isFixed);
         for (var _i = 0, modeChangeObservers_1 = modeChangeObservers; _i < modeChangeObservers_1.length; _i++) {
             var observer = modeChangeObservers_1[_i];
             observer(newMode);
@@ -1481,6 +1540,8 @@ Tabs.addObserver(controlId.MODE, function (v) { return applyMode(v[0]); });
 var restriction = Picker.getValue(controlId.RESTRICTIONS);
 Picker.addObserver(controlId.RESTRICTIONS, function (v) {
     restriction = v;
+    clearPresetFixed();
+    clearPresetMovement();
     restartRendering();
 });
 exports.default = Parameters;
@@ -1488,10 +1549,10 @@ exports.default = Parameters;
 
 /***/ }),
 
-/***/ "./src/ts/presets.ts":
-/*!***************************!*\
-  !*** ./src/ts/presets.ts ***!
-  \***************************/
+/***/ "./src/ts/presets-fixed.ts":
+/*!*********************************!*\
+  !*** ./src/ts/presets-fixed.ts ***!
+  \*********************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -1625,6 +1686,61 @@ presets[20] = {
     distance: 1.647,
     restriction: restriction_1.Restriction.NO_RIGHT_NEIGHBOUR,
     scale: 1,
+};
+function getPreset(id) {
+    return presets[id];
+}
+exports.getPreset = getPreset;
+
+
+/***/ }),
+
+/***/ "./src/ts/presets-movement.ts":
+/*!************************************!*\
+  !*** ./src/ts/presets-movement.ts ***!
+  \************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var restriction_1 = __webpack_require__(/*! ./restriction */ "./src/ts/restriction.ts");
+var presets = [];
+presets[0] = {
+    poles: 3,
+    distanceFrom: 1,
+    distanceTo: 1.6,
+    restriction: restriction_1.Restriction.NONE,
+    scale: 3,
+};
+presets[1] = {
+    poles: 5,
+    distanceFrom: 0.5,
+    distanceTo: 1,
+    restriction: restriction_1.Restriction.NONE,
+    scale: 1,
+};
+presets[2] = {
+    poles: 6,
+    distanceFrom: 1,
+    distanceTo: 1.5,
+    restriction: restriction_1.Restriction.NO_REPEAT,
+    scale: 2.5,
+};
+presets[3] = {
+    poles: 3,
+    distanceFrom: 1,
+    distanceTo: 1.7,
+    restriction: restriction_1.Restriction.NO_RIGHT_NEIGHBOUR,
+    scale: 3,
+};
+presets[4] = {
+    poles: 5,
+    distanceFrom: 0.265,
+    distanceTo: 1.65,
+    restriction: restriction_1.Restriction.NO_NEIGHBOUR,
+    scale: 3,
 };
 function getPreset(id) {
     return presets[id];

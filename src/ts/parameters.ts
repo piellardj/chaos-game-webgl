@@ -1,4 +1,5 @@
-import * as Presets from "./presets";
+import * as PresetsFixed from "./presets-fixed";
+import * as PresetsMovement from "./presets-movement";
 import { Restriction } from "./restriction";
 
 declare const Button: any;
@@ -23,7 +24,8 @@ const controlId = {
     COLORS: "colors-checkbox-id",
 
     MODE: "mode",
-    PRESETS: "presets-picker-id",
+    PRESETS_FIXED: "presets-fixed-picker-id",
+    PRESETS_MOVEMENT: "presets-movement-picker-id",
     POLES: "poles-range-id",
     DISTANCE: "distance-range-id",
     DISTANCE_FROM: "distance-from-range-id",
@@ -118,9 +120,14 @@ class Parameters {
         return modeChangeObservers;
     }
 
-    public static set preset(p: number) {
-        Picker.setValue(controlId.PRESETS, "" + p);
-        applyPreset(p);
+    public static set presetFixed(p: number) {
+        Picker.setValue(controlId.PRESETS_FIXED, "" + p);
+        applyPresetFixed(p);
+    }
+
+    public static set presetMovement(p: number) {
+        Picker.setValue(controlId.PRESETS_MOVEMENT, "" + p);
+        applyPresetMovement(p);
     }
 
     public static get poles(): number {
@@ -137,15 +144,23 @@ class Parameters {
     }
     public static set distance(d: number) {
         distance = d;
-        Range.setValue(controlId.DISTANCE, distance);
+        Range.setValue(controlId.DISTANCE, d);
     }
 
     public static get distanceFrom(): number {
         return distanceFrom;
     }
+    public static set distanceFrom(d: number) {
+        distanceFrom = d;
+        Range.setValue(controlId.DISTANCE_FROM, d);
+    }
 
     public static get distanceTo(): number {
         return distanceTo;
+    }
+    public static set distanceTo(d: number) {
+        distanceTo = d;
+        Range.setValue(controlId.DISTANCE_TO, d);
     }
 
     public static get restriction(): Restriction {
@@ -217,17 +232,17 @@ Checkbox.addObserver(controlId.COLORS, (checked: boolean) => {
 });
 
 /* --- PARAMETERS ----------------------------------------------------- */
-let presetId: number = -1;
-function clearPreset() {
-    if (presetId >= 0) {
-        presetId = -1;
-        Picker.setValue(controlId.PRESETS, null);
+let presetFixedId: number = -1;
+function clearPresetFixed() {
+    if (presetFixedId >= 0) {
+        presetFixedId = -1;
+        Picker.setValue(controlId.PRESETS_FIXED, null);
     }
 }
-function applyPreset(newPresetId: number) {
+function applyPresetFixed(newPresetId: number) {
     if (newPresetId >= 0) {
-        presetId = newPresetId;
-        const preset = Presets.getPreset(newPresetId);
+        presetFixedId = newPresetId;
+        const preset = PresetsFixed.getPreset(newPresetId);
 
         Parameters.poles = preset.poles;
         Parameters.distance = preset.distance;
@@ -237,19 +252,50 @@ function applyPreset(newPresetId: number) {
         callObservers(observers.resetView);
     }
 }
-Picker.addObserver(controlId.PRESETS, (v: string) => {
+Picker.addObserver(controlId.PRESETS_FIXED, (v: string) => {
     if (v === null) {
-        presetId = -1;
+        presetFixedId = -1;
     } else {
-        applyPreset(+v);
+        applyPresetFixed(+v);
     }
 });
-applyPreset(+Picker.getValue(controlId.PRESETS));
+applyPresetFixed(+Picker.getValue(controlId.PRESETS_FIXED));
+
+let presetMovementId: number = -1;
+function clearPresetMovement() {
+    if (presetMovementId >= 0) {
+        presetMovementId = -1;
+        Picker.setValue(controlId.PRESETS_MOVEMENT, null);
+    }
+}
+function applyPresetMovement(newPresetId: number) {
+    if (newPresetId >= 0) {
+        presetMovementId = newPresetId;
+        const preset = PresetsMovement.getPreset(newPresetId);
+
+        Parameters.poles = preset.poles;
+        Parameters.distanceFrom = preset.distanceFrom;
+        Parameters.distanceTo = preset.distanceTo;
+        Parameters.restriction = preset.restriction;
+        Parameters.scale = preset.scale;
+        restartRendering();
+        callObservers(observers.resetView);
+    }
+}
+Picker.addObserver(controlId.PRESETS_MOVEMENT, (v: string) => {
+    if (v === null) {
+        presetMovementId = -1;
+    } else {
+        applyPresetMovement(+v);
+    }
+});
+applyPresetMovement(+Picker.getValue(controlId.PRESETS_MOVEMENT));
 
 let poles: number = Range.getValue(controlId.POLES);
 Range.addObserver(controlId.POLES, (p: number) => {
     poles = p;
-    clearPreset();
+    clearPresetFixed();
+    clearPresetMovement();
     restartRendering();
     callObservers(observers.resetView);
 });
@@ -257,13 +303,14 @@ Range.addObserver(controlId.POLES, (p: number) => {
 let distance: number = Range.getValue(controlId.DISTANCE);
 Range.addObserver(controlId.DISTANCE, (d: number) => {
     distance = d;
-    clearPreset();
+    clearPresetFixed();
     restartRendering();
 });
 
 let distanceFrom: number = Range.getValue(controlId.DISTANCE_FROM);
 Range.addObserver(controlId.DISTANCE_FROM, (df: number) => {
     distanceFrom = df;
+    clearPresetMovement();
     callObservers(observers.preview);
     restartRendering();
 });
@@ -271,14 +318,8 @@ Range.addObserver(controlId.DISTANCE_FROM, (df: number) => {
 let distanceTo: number = Range.getValue(controlId.DISTANCE_TO);
 Range.addObserver(controlId.DISTANCE_TO, (dt: number) => {
     distanceTo = dt;
+    clearPresetMovement();
     callObservers(observers.preview);
-    restartRendering();
-});
-
-let forbidRepeat: boolean = Checkbox.isChecked(controlId.FORBID_REPEAT);
-Checkbox.addObserver(controlId.FORBID_REPEAT, (checked: boolean) => {
-    forbidRepeat = checked;
-    clearPreset();
     restartRendering();
 });
 
@@ -294,11 +335,25 @@ function applyMode(newMode: Mode): void {
     if (newMode !== mode) {
         mode = newMode;
 
-        Controls.toggleVisibility(controlId.PRESETS, mode === Mode.FIXED);
-        Controls.toggleVisibility(controlId.DISTANCE, mode === Mode.FIXED);
+        const isFixed: boolean = mode === Mode.FIXED;
+        if (isFixed) {
+            const presetId = Picker.getValue(controlId.PRESETS_FIXED);
+            if (presetId) {
+                applyPresetFixed(+presetId);
+            }
+        } else {
+            const presetId = Picker.getValue(controlId.PRESETS_MOVEMENT);
+            if (presetId) {
+                applyPresetMovement(+presetId);
+            }
+        }
 
-        Controls.toggleVisibility(controlId.DISTANCE_FROM, mode === Mode.MOVEMENT);
-        Controls.toggleVisibility(controlId.DISTANCE_TO, mode === Mode.MOVEMENT);
+        Controls.toggleVisibility(controlId.PRESETS_FIXED, isFixed);
+        Controls.toggleVisibility(controlId.DISTANCE, isFixed);
+
+        Controls.toggleVisibility(controlId.PRESETS_MOVEMENT, !isFixed!);
+        Controls.toggleVisibility(controlId.DISTANCE_FROM, !isFixed);
+        Controls.toggleVisibility(controlId.DISTANCE_TO, !isFixed);
 
         for (const observer of modeChangeObservers) {
             observer(newMode);
@@ -312,6 +367,8 @@ Tabs.addObserver(controlId.MODE, (v: string[]) => applyMode(v[0] as Mode));
 let restriction: Restriction = Picker.getValue(controlId.RESTRICTIONS) as Restriction;
 Picker.addObserver(controlId.RESTRICTIONS, (v: string) => {
     restriction = v as Restriction;
+    clearPresetFixed();
+    clearPresetMovement();
     restartRendering();
 });
 
