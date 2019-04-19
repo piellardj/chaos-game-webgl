@@ -1,4 +1,5 @@
 import * as Presets from "./presets";
+import { Restriction } from "./restriction";
 
 declare const Button: any;
 declare const Canvas: any;
@@ -28,6 +29,7 @@ const controlId = {
     DISTANCE_FROM: "distance-from-range-id",
     DISTANCE_TO: "distance-to-range-id",
     FORBID_REPEAT: "forbid-repeat-checkbox-id",
+    RESTRICTIONS: "restrictions-picker-id",
 
     RESULT_SIZE: "result-dimensions",
     DOWNLOAD: "result-download-id",
@@ -146,13 +148,12 @@ class Parameters {
         return distanceTo;
     }
 
-    public static get forbidRepeat(): boolean {
-        return forbidRepeat;
+    public static get restriction(): Restriction {
+        return restriction;
     }
-    public static set forbidRepeat(f: boolean) {
-        forbidRepeat = f;
-        Checkbox.setChecked(controlId.FORBID_REPEAT, forbidRepeat);
-        callObservers(observers.clear);
+    public static set restriction(r: Restriction) {
+        restriction = r;
+        Picker.setValue(controlId.RESTRICTIONS, r);
     }
 
     public static get downloadObservers(): DownloadObserver[] {
@@ -230,7 +231,7 @@ function applyPreset(newPresetId: number) {
 
         Parameters.poles = preset.poles;
         Parameters.distance = preset.distance;
-        Parameters.forbidRepeat = preset.forbidRepeat;
+        Parameters.restriction = preset.restriction;
         Parameters.scale = preset.scale;
         restartRendering();
         callObservers(observers.resetView);
@@ -307,5 +308,11 @@ function applyMode(newMode: Mode): void {
 }
 applyMode(Tabs.getValues(controlId.MODE)[0] as Mode);
 Tabs.addObserver(controlId.MODE, (v: string[]) => applyMode(v[0] as Mode));
+
+let restriction: Restriction = Picker.getValue(controlId.RESTRICTIONS) as Restriction;
+Picker.addObserver(controlId.RESTRICTIONS, (v: string) => {
+    restriction = v as Restriction;
+    restartRendering();
+});
 
 export default Parameters;

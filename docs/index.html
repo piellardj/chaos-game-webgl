@@ -21,8 +21,9 @@
 
         <div class="description">
           <p>The Chaos Game is an iterative way of drawing fractals using a number of fixed invisible points called attractors and a single point that is repeatedly moved and drawn on the canvas. The initial position of the point is picked randomly on the canvas, and then the next position is computed as follow: a random attractor is chosen and the point is moved a fraction of the distance towards this attractor.</p>
-          <p>You can discover lots of different fractals by slightly modifying the parameters: number of attractors, the distance used to move the point and an additional rule forbidding to choose the same attractor twice in a row. Moreover, the simulation can run in an additional mode where the distance slowly drifts, resulting in flower-like patterns.</p>
-          <p>This project is running on CPU and rendered using WebGL.</p>
+          <p>You can discover lots of different fractals by slightly modifying the parameters: number of attractors, distance used to move the point and a restriction on the choice of the attractor depending on previous choices. Moreover, the simulation can run in an additional mode where the distance slowly drifts, resulting in flower-like patterns.</p>
+          <p>You can also zoom in and explore the fractals with the mouse.</p>
+          <p>This project runs on CPU and is rendered using WebGL.</p>
 
           <br>
 
@@ -121,18 +122,25 @@
                   <div class="picker-button right">&nbsp;</div>
                   <input type="radio" name="presets-picker-id" value="0" data-label="Sierpinski triangle">
                   <input type="radio" name="presets-picker-id" value="1" data-label="Cathedral">
-                  <input type="radio" name="presets-picker-id" value="2" data-label="Pentagrams">
-                  <input type="radio" name="presets-picker-id" value="3" data-label="Wires: triangle">
+                  <input type="radio" name="presets-picker-id" value="2" data-label="Wires: triangle">
+                  <input type="radio" name="presets-picker-id" value="3" data-label="Pentagrams">
                   <input type="radio" name="presets-picker-id" value="4" data-label="Wires: cube">
-                  <input type="radio" name="presets-picker-id" value="5" data-label="Square trees">
-                  <input type="radio" name="presets-picker-id" value="6" data-label="Stars">
-                  <input type="radio" name="presets-picker-id" value="7" data-label="Infinite cubes">
-                  <input type="radio" name="presets-picker-id" value="8" data-label="Crustaceans">
-                  <input type="radio" name="presets-picker-id" value="9" data-label="Chessboard">
-                  <input type="radio" name="presets-picker-id" value="10" data-label="Starmap">
-                  <input type="radio" name="presets-picker-id" value="11" data-label="Pythagoras tree">
-                  <input type="radio" name="presets-picker-id" value="12" data-label="Monolith">
-                  <input type="radio" name="presets-picker-id" value="13" data-label="Koch snowflake">
+                  <input type="radio" name="presets-picker-id" value="5" data-label="Hollow">
+                  <input type="radio" name="presets-picker-id" value="6" data-label="T-Square">
+                  <input type="radio" name="presets-picker-id" value="7" data-label="Stars">
+                  <input type="radio" name="presets-picker-id" value="8" data-label="Infinite cubes">
+                  <input type="radio" name="presets-picker-id" value="9" data-label="Crustaceans">
+                  <input type="radio" name="presets-picker-id" value="10" data-label="Golden square">
+                  <input type="radio" name="presets-picker-id" value="11" data-label="Starmap">
+                  <input type="radio" name="presets-picker-id" value="12" data-label="Pythagoras tree">
+                  <input type="radio" name="presets-picker-id" value="13" data-label="Monolith">
+                  <input type="radio" name="presets-picker-id" value="14" data-label="Koch snowflake">
+                  <input type="radio" name="presets-picker-id" value="15" data-label="Gecko">
+                  <input type="radio" name="presets-picker-id" value="16" data-label="Hubs">
+                  <input type="radio" name="presets-picker-id" value="17" data-label="Sierpinski carpet">
+                  <input type="radio" name="presets-picker-id" value="18" data-label="Forest">
+                  <input type="radio" name="presets-picker-id" value="19" data-label="Triangles">
+                  <input type="radio" name="presets-picker-id" value="20" data-label="Spirals">
                 </div>
               </div>
               <div class="control" id="control-poles-range-id">
@@ -163,11 +171,19 @@
                   <span class="tooltip"></span>
                 </div>
               </div>
-              <div class="control" id="control-forbid-repeat-checkbox-id">
-                <label>Forbid repeat:</label>
-                <div class="checkbox">
-                  <input type="checkbox" id="forbid-repeat-checkbox-id">
-                  <label for="forbid-repeat-checkbox-id" class="checkmark"></label>
+              <div class="control" id="control-restrictions-picker-id">
+                <label>Restrictions:</label>
+                <div class="inline-picker compact" id="restrictions-picker-id" style='flex:1' data-placeholder=Custom>
+                  <div class="picker-button left">&nbsp;</div>
+                  <span></span>
+                  <div class="picker-button right">&nbsp;</div>
+                  <input type="radio" name="restrictions-picker-id" value="none" data-label="None">
+                  <input type="radio" name="restrictions-picker-id" value="no-repeat" data-label="No repeat">
+                  <input type="radio" name="restrictions-picker-id" value="no-double-repeat" data-label="No repeat twice">
+                  <input type="radio" name="restrictions-picker-id" value="no-neighbour" data-label="No neighbour">
+                  <input type="radio" name="restrictions-picker-id" value="no-neighbour-after-repeat" data-label="No neighbour if previous was repeat">
+                  <input type="radio" name="restrictions-picker-id" value="no-right-neighbour" data-label="No right neighbour">
+                  <input type="radio" name="restrictions-picker-id" value="no-right-neighbour-after-repeat" data-label="No right neighbour if previous was repeat">
                 </div>
               </div>
             </div>

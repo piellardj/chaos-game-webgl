@@ -125,6 +125,7 @@ var ShaderManager = __importStar(__webpack_require__(/*! ./gl-utils/shader-manag
 var vbo_1 = __importDefault(__webpack_require__(/*! ./gl-utils/vbo */ "./src/ts/gl-utils/vbo.ts"));
 var colors_1 = __importDefault(__webpack_require__(/*! ./colors */ "./src/ts/colors.ts"));
 var parameters_1 = __importDefault(__webpack_require__(/*! ./parameters */ "./src/ts/parameters.ts"));
+var Attractors = __importStar(__webpack_require__(/*! ./restriction */ "./src/ts/restriction.ts"));
 var ChaosGame = (function (_super) {
     __extends(ChaosGame, _super);
     function ChaosGame() {
@@ -209,23 +210,12 @@ var ChaosGame = (function (_super) {
     };
     ChaosGame.prototype.computeXPoints = function (N, distance) {
         var nbPoles = parameters_1.default.poles;
-        var chooseAnyPole = function () {
-            return Math.floor(nbPoles * Math.random());
-        };
-        var previousPole = -1;
-        var chooseDifferentPole = function () {
-            var pole;
-            do {
-                pole = chooseAnyPole();
-            } while (pole === previousPole);
-            previousPole = pole;
-            return pole;
-        };
-        var choosePole = parameters_1.default.forbidRepeat ? chooseDifferentPole : chooseAnyPole;
+        Attractors.clearHistory();
+        var choosePole = Attractors.getChooseFunction();
         var poles = this.recomputePolesPositions(nbPoles);
         var pos = [2 * Math.random() - 1, 2 * Math.random() - 1];
         function nextPos() {
-            var pole = choosePole();
+            var pole = choosePole(nbPoles);
             pos[0] += distance * (poles[2 * pole + 0] - pos[0]);
             pos[1] += distance * (poles[2 * pole + 1] - pos[1]);
             return pole;
@@ -1041,8 +1031,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var GLCanvas = __importStar(__webpack_require__(/*! ./gl-utils/gl-canvas */ "./src/ts/gl-utils/gl-canvas.ts"));
 var gl_canvas_1 = __webpack_require__(/*! ./gl-utils/gl-canvas */ "./src/ts/gl-utils/gl-canvas.ts");
 var viewport_1 = __importDefault(__webpack_require__(/*! ./gl-utils/viewport */ "./src/ts/gl-utils/viewport.ts"));
-var downloader_1 = __importDefault(__webpack_require__(/*! ./downloader */ "./src/ts/downloader.ts"));
 var chaos_game_1 = __importDefault(__webpack_require__(/*! ./chaos-game */ "./src/ts/chaos-game.ts"));
+var downloader_1 = __importDefault(__webpack_require__(/*! ./downloader */ "./src/ts/downloader.ts"));
 var parameters_1 = __importDefault(__webpack_require__(/*! ./parameters */ "./src/ts/parameters.ts"));
 function main() {
     initGL();
@@ -1051,7 +1041,7 @@ function main() {
     parameters_1.default.speed = 17;
     parameters_1.default.autorun = true;
     parameters_1.default.colors = false;
-    parameters_1.default.preset = 7;
+    parameters_1.default.preset = 15;
     var needToAdjustCanvasSize = true;
     var needToClearCanvas = true;
     var needToDisplayPreview = false;
@@ -1190,6 +1180,7 @@ var controlId = {
     DISTANCE_FROM: "distance-from-range-id",
     DISTANCE_TO: "distance-to-range-id",
     FORBID_REPEAT: "forbid-repeat-checkbox-id",
+    RESTRICTIONS: "restrictions-picker-id",
     RESULT_SIZE: "result-dimensions",
     DOWNLOAD: "result-download-id",
 };
@@ -1332,14 +1323,13 @@ var Parameters = (function () {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(Parameters, "forbidRepeat", {
+    Object.defineProperty(Parameters, "restriction", {
         get: function () {
-            return forbidRepeat;
+            return restriction;
         },
-        set: function (f) {
-            forbidRepeat = f;
-            Checkbox.setChecked(controlId.FORBID_REPEAT, forbidRepeat);
-            callObservers(observers.clear);
+        set: function (r) {
+            restriction = r;
+            Picker.setValue(controlId.RESTRICTIONS, r);
         },
         enumerable: true,
         configurable: true
@@ -1419,7 +1409,7 @@ function applyPreset(newPresetId) {
         var preset = Presets.getPreset(newPresetId);
         Parameters.poles = preset.poles;
         Parameters.distance = preset.distance;
-        Parameters.forbidRepeat = preset.forbidRepeat;
+        Parameters.restriction = preset.restriction;
         Parameters.scale = preset.scale;
         restartRendering();
         callObservers(observers.resetView);
@@ -1488,6 +1478,11 @@ function applyMode(newMode) {
 }
 applyMode(Tabs.getValues(controlId.MODE)[0]);
 Tabs.addObserver(controlId.MODE, function (v) { return applyMode(v[0]); });
+var restriction = Picker.getValue(controlId.RESTRICTIONS);
+Picker.addObserver(controlId.RESTRICTIONS, function (v) {
+    restriction = v;
+    restartRendering();
+});
 exports.default = Parameters;
 
 
@@ -1503,96 +1498,242 @@ exports.default = Parameters;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var presets = [
-    {
-        poles: 3,
-        distance: 0.5,
-        forbidRepeat: false,
-        scale: 1,
-    },
-    {
-        poles: 6,
-        distance: 0.5,
-        forbidRepeat: false,
-        scale: 1,
-    },
-    {
-        poles: 5,
-        distance: 0.5,
-        forbidRepeat: false,
-        scale: 1,
-    },
-    {
-        poles: 3,
-        distance: 1.5,
-        forbidRepeat: false,
-        scale: 3,
-    },
-    {
-        poles: 4,
-        distance: 0.5,
-        forbidRepeat: true,
-        scale: 0.8,
-    },
-    {
-        poles: 4,
-        distance: 1.5,
-        forbidRepeat: true,
-        scale: 2.5,
-    },
-    {
-        poles: 6,
-        distance: 0.57,
-        forbidRepeat: false,
-        scale: 1.2,
-    },
-    {
-        poles: 6,
-        distance: 1.5,
-        forbidRepeat: true,
-        scale: 2,
-    },
-    {
-        poles: 4,
-        distance: 0.4,
-        forbidRepeat: true,
-        scale: 0.8,
-    },
-    {
-        poles: 4,
-        distance: 1.618,
-        forbidRepeat: true,
-        scale: 3,
-    },
-    {
-        poles: 5,
-        distance: 1.618,
-        forbidRepeat: true,
-        scale: 4,
-    },
-    {
-        poles: 3,
-        distance: 1.618,
-        forbidRepeat: true,
-        scale: 4,
-    },
-    {
-        poles: 4,
-        distance: 1.618,
-        forbidRepeat: false,
-        scale: 4,
-    },
-    {
-        poles: 6,
-        distance: 0.667,
-        forbidRepeat: false,
-        scale: 0.65,
-    },
-];
+var restriction_1 = __webpack_require__(/*! ./restriction */ "./src/ts/restriction.ts");
+var presets = [];
+presets[0] = {
+    poles: 3,
+    distance: 0.5,
+    restriction: restriction_1.Restriction.NONE,
+    scale: 1,
+};
+presets[1] = {
+    poles: 6,
+    distance: 0.5,
+    restriction: restriction_1.Restriction.NONE,
+    scale: 0.75,
+};
+presets[2] = {
+    poles: 3,
+    distance: 1.5,
+    restriction: restriction_1.Restriction.NONE,
+    scale: 3,
+};
+presets[3] = {
+    poles: 5,
+    distance: 0.5,
+    restriction: restriction_1.Restriction.NONE,
+    scale: 1,
+};
+presets[4] = {
+    poles: 4,
+    distance: 0.5,
+    restriction: restriction_1.Restriction.NO_REPEAT,
+    scale: 0.8,
+};
+presets[5] = {
+    poles: 4,
+    distance: 0.5,
+    restriction: restriction_1.Restriction.NO_NEIGHBOUR_AFTER_REPEAT,
+    scale: 0.8,
+};
+presets[6] = {
+    poles: 4,
+    distance: 1.5,
+    restriction: restriction_1.Restriction.NO_REPEAT,
+    scale: 2.5,
+};
+presets[7] = {
+    poles: 6,
+    distance: 0.57,
+    restriction: restriction_1.Restriction.NONE,
+    scale: 1.2,
+};
+presets[8] = {
+    poles: 6,
+    distance: 1.5,
+    restriction: restriction_1.Restriction.NO_REPEAT,
+    scale: 2,
+};
+presets[9] = {
+    poles: 4,
+    distance: 0.4,
+    restriction: restriction_1.Restriction.NO_REPEAT,
+    scale: 0.8,
+};
+presets[10] = {
+    poles: 4,
+    distance: 1.618,
+    restriction: restriction_1.Restriction.NO_REPEAT,
+    scale: 3,
+};
+presets[11] = {
+    poles: 5,
+    distance: 1.618,
+    restriction: restriction_1.Restriction.NO_REPEAT,
+    scale: 4,
+};
+presets[12] = {
+    poles: 3,
+    distance: 1.618,
+    restriction: restriction_1.Restriction.NO_REPEAT,
+    scale: 4,
+};
+presets[13] = {
+    poles: 4,
+    distance: 1.618,
+    restriction: restriction_1.Restriction.NONE,
+    scale: 4,
+};
+presets[14] = {
+    poles: 6,
+    distance: 0.667,
+    restriction: restriction_1.Restriction.NONE,
+    scale: 0.65,
+};
+presets[15] = {
+    poles: 5,
+    distance: 1.5,
+    restriction: restriction_1.Restriction.NO_NEIGHBOUR,
+    scale: 3,
+};
+presets[16] = {
+    poles: 7,
+    distance: 1.445,
+    restriction: restriction_1.Restriction.NO_DOUBLE_REPEAT,
+    scale: 1.5,
+};
+presets[17] = {
+    poles: 4,
+    distance: 0.5,
+    restriction: restriction_1.Restriction.NO_DOUBLE_REPEAT,
+    scale: 0.75,
+};
+presets[18] = {
+    poles: 3,
+    distance: 0.386,
+    restriction: restriction_1.Restriction.NO_RIGHT_NEIGHBOUR,
+    scale: 1,
+};
+presets[19] = {
+    poles: 3,
+    distance: 1.755,
+    restriction: restriction_1.Restriction.NO_REPEAT,
+    scale: 4,
+};
+presets[20] = {
+    poles: 3,
+    distance: 1.647,
+    restriction: restriction_1.Restriction.NO_RIGHT_NEIGHBOUR,
+    scale: 1,
+};
 function getPreset(id) {
     return presets[id];
 }
 exports.getPreset = getPreset;
+
+
+/***/ }),
+
+/***/ "./src/ts/restriction.ts":
+/*!*******************************!*\
+  !*** ./src/ts/restriction.ts ***!
+  \*******************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var parameters_1 = __importDefault(__webpack_require__(/*! ./parameters */ "./src/ts/parameters.ts"));
+var Restriction;
+(function (Restriction) {
+    Restriction["NONE"] = "none";
+    Restriction["NO_REPEAT"] = "no-repeat";
+    Restriction["NO_DOUBLE_REPEAT"] = "no-double-repeat";
+    Restriction["NO_NEIGHBOUR"] = "no-neighbour";
+    Restriction["NO_NEIGHBOUR_AFTER_REPEAT"] = "no-neighbour-after-repeat";
+    Restriction["NO_RIGHT_NEIGHBOUR"] = "no-right-neighbour";
+})(Restriction || (Restriction = {}));
+exports.Restriction = Restriction;
+function getChooseFunction() {
+    switch (parameters_1.default.restriction) {
+        case Restriction.NONE:
+            return chooseAny;
+        case Restriction.NO_REPEAT:
+            return chooseNoRepeat;
+        case Restriction.NO_DOUBLE_REPEAT:
+            return chooseNoDoubleRepeat;
+        case Restriction.NO_NEIGHBOUR:
+            return chooseNoNeighbour;
+        case Restriction.NO_NEIGHBOUR_AFTER_REPEAT:
+            return chooseNoNeighbourAfterRepeat;
+        case Restriction.NO_RIGHT_NEIGHBOUR:
+            return chooseNoRightNeighbour;
+        default:
+            return null;
+    }
+}
+exports.getChooseFunction = getChooseFunction;
+var lastChoice = -1;
+var lastChoices = [-1, -1];
+var lastIndex = 0;
+function clearHistory() {
+    lastChoice = -1;
+    lastChoices = [-1, -1];
+    lastIndex = 0;
+}
+exports.clearHistory = clearHistory;
+function chooseAny(nbPoles) {
+    return Math.floor(nbPoles * Math.random());
+}
+function chooseNoRepeat(nbPoles) {
+    var pole;
+    do {
+        pole = chooseAny(nbPoles);
+    } while (pole === lastChoice);
+    lastChoice = pole;
+    return pole;
+}
+function chooseNoDoubleRepeat(nbPoles) {
+    var pole;
+    var oneRepeatAlready = (lastChoices[0] === lastChoices[1]);
+    do {
+        pole = chooseAny(nbPoles);
+    } while (oneRepeatAlready && lastChoices[0] === pole);
+    lastIndex = (lastIndex + 1) % 2;
+    lastChoices[lastIndex] = pole;
+    return pole;
+}
+function chooseNoNeighbour(nbPoles) {
+    var pole;
+    do {
+        pole = chooseAny(nbPoles);
+    } while (((pole + 1) % nbPoles) === lastChoice || ((pole + nbPoles - 1) % nbPoles) === lastChoice);
+    lastChoice = pole;
+    return pole;
+}
+function chooseNoNeighbourAfterRepeat(nbPoles) {
+    var pole;
+    var oneRepeatAlready = (lastChoices[0] === lastChoices[1]);
+    do {
+        pole = chooseAny(nbPoles);
+    } while (oneRepeatAlready &&
+        (((pole + 1) % nbPoles) === lastChoices[0] || ((pole + nbPoles - 1) % nbPoles) === lastChoices[0]));
+    lastIndex = (lastIndex + 1) % 2;
+    lastChoices[lastIndex] = pole;
+    return pole;
+}
+function chooseNoRightNeighbour(nbPoles) {
+    var pole;
+    do {
+        pole = chooseAny(nbPoles);
+    } while (((pole + 1) % nbPoles) === lastChoice);
+    lastChoice = pole;
+    return pole;
+}
 
 
 /***/ })

@@ -7,6 +7,8 @@ import VBO from "./gl-utils/vbo";
 import ColorFromHue from "./colors";
 import Parameters from "./parameters";
 
+import * as Attractors from "./restriction";
+
 declare const Canvas: any;
 
 interface IPointsSet {
@@ -132,21 +134,8 @@ class ChaosGame extends GLResource {
     private computeXPoints(N: number, distance: number): IPointsSets {
         const nbPoles = Parameters.poles;
 
-        const chooseAnyPole = () => {
-            return Math.floor(nbPoles * Math.random());
-        };
-
-        let previousPole = -1;
-        const chooseDifferentPole = () => {
-            let pole;
-            do {
-                pole = chooseAnyPole();
-            } while (pole === previousPole);
-            previousPole = pole;
-            return pole;
-        };
-
-        const choosePole = Parameters.forbidRepeat ? chooseDifferentPole : chooseAnyPole;
+        Attractors.clearHistory();
+        const choosePole = Attractors.getChooseFunction();
 
         const poles: Float32Array = this.recomputePolesPositions(nbPoles);
 
@@ -154,7 +143,7 @@ class ChaosGame extends GLResource {
         const pos = [2 * Math.random() - 1, 2 * Math.random() - 1];
 
         function nextPos(): number {
-            const pole = choosePole();
+            const pole = choosePole(nbPoles);
             pos[0] += distance * (poles[2 * pole + 0] - pos[0]);
             pos[1] += distance * (poles[2 * pole + 1] - pos[1]);
             return pole;

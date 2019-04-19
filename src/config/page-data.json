@@ -3,8 +3,9 @@
     "description": "WebGL implementation of the Chaos game.",
     "introduction": [
         "The Chaos Game is an iterative way of drawing fractals using a number of fixed invisible points called attractors and a single point that is repeatedly moved and drawn on the canvas. The initial position of the point is picked randomly on the canvas, and then the next position is computed as follow: a random attractor is chosen and the point is moved a fraction of the distance towards this attractor.",
-        "You can discover lots of different fractals by slightly modifying the parameters: number of attractors, the distance used to move the point and an additional rule forbidding to choose the same attractor twice in a row. Moreover, the simulation can run in an additional mode where the distance slowly drifts, resulting in flower-like patterns.",
-        "This project is running on CPU and rendered using WebGL."
+        "You can discover lots of different fractals by slightly modifying the parameters: number of attractors, distance used to move the point and a restriction on the choice of the attractor depending on previous choices. Moreover, the simulation can run in an additional mode where the distance slowly drifts, resulting in flower-like patterns.",
+        "You can also zoom in and explore the fractals with the mouse.",
+        "This project runs on CPU and is rendered using WebGL."
     ],
     "githubProjectName": "chaos-game-webgl",
     "additionalLinks": [],
@@ -97,11 +98,11 @@
                         },
                         {
                             "value": "2",
-                            "label": "Pentagrams"
+                            "label": "Wires: triangle"
                         },
                         {
                             "value": "3",
-                            "label": "Wires: triangle"
+                            "label": "Pentagrams"
                         },
                         {
                             "value": "4",
@@ -109,39 +110,67 @@
                         },
                         {
                             "value": "5",
-                            "label": "Square trees"
+                            "label": "Hollow"
                         },
                         {
                             "value": "6",
-                            "label": "Stars"
+                            "label": "T-Square"
                         },
                         {
                             "value": "7",
-                            "label": "Infinite cubes"
+                            "label": "Stars"
                         },
                         {
                             "value": "8",
-                            "label": "Crustaceans"
+                            "label": "Infinite cubes"
                         },
                         {
                             "value": "9",
-                            "label": "Chessboard"
+                            "label": "Crustaceans"
                         },
                         {
                             "value": "10",
-                            "label": "Starmap"
+                            "label": "Golden square"
                         },
                         {
                             "value": "11",
-                            "label": "Pythagoras tree"
+                            "label": "Starmap"
                         },
                         {
                             "value": "12",
-                            "label": "Monolith"
+                            "label": "Pythagoras tree"
                         },
                         {
                             "value": "13",
+                            "label": "Monolith"
+                        },
+                        {
+                            "value": "14",
                             "label": "Koch snowflake"
+                        },
+                        {
+                            "value": "15",
+                            "label": "Gecko"
+                        },
+                        {
+                            "value": "16",
+                            "label": "Hubs"
+                        },
+                        {
+                            "value": "17",
+                            "label": "Sierpinski carpet"
+                        },
+                        {
+                            "value": "18",
+                            "label": "Forest"
+                        },
+                        {
+                            "value": "19",
+                            "label": "Triangles"
+                        },
+                        {
+                            "value": "20",
+                            "label": "Spirals"
                         }
                     ]
                 },
@@ -182,9 +211,40 @@
                     "step": 0.001
                 },
                 {
-                    "title": "Forbid repeat",
-                    "type": "checkbox",
-                    "id": "forbid-repeat-checkbox-id"
+                    "title": "Restrictions",
+                    "type": "picker",
+                    "id": "restrictions-picker-id",
+                    "placeholder": "Custom",
+                    "options": [
+                        {
+                            "value": "none",
+                            "label": "None"
+                        },
+                        {
+                            "value": "no-repeat",
+                            "label": "No repeat"
+                        },
+                        {
+                            "value": "no-double-repeat",
+                            "label": "No repeat twice"
+                        },
+                        {
+                            "value": "no-neighbour",
+                            "label": "No neighbour"
+                        },
+                        {
+                            "value": "no-neighbour-after-repeat",
+                            "label": "No neighbour if previous was repeat"
+                        },
+                        {
+                            "value": "no-right-neighbour",
+                            "label": "No right neighbour"
+                        },
+                        {
+                            "value": "no-right-neighbour-after-repeat",
+                            "label": "No right neighbour if previous was repeat"
+                        }
+                    ]
                 }
             ]
         },

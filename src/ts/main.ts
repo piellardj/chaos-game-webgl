@@ -2,8 +2,8 @@ import * as GLCanvas from "./gl-utils/gl-canvas";
 import { gl } from "./gl-utils/gl-canvas";
 import Viewport from "./gl-utils/viewport";
 
-import DownloadCanvas from "./downloader";
 import Game from "./chaos-game";
+import DownloadCanvas from "./downloader";
 import Parameters from "./parameters";
 
 declare const Button: any;
@@ -18,7 +18,7 @@ function main() {
     Parameters.speed = 17;
     Parameters.autorun = true;
     Parameters.colors = false;
-    Parameters.preset = 7;
+    Parameters.preset = 15;
 
     let needToAdjustCanvasSize = true;
     let needToClearCanvas = true;
@@ -71,7 +71,7 @@ function main() {
             if (Parameters.autorun) {
                 if (Parameters.mode === "movement") {
                     distance += 0.002;
-    
+
                     if (distance > Parameters.distanceTo) {
                         distance = Parameters.distanceFrom;
                     }
