@@ -122,12 +122,16 @@ class Parameters {
 
     public static set presetFixed(p: number) {
         Picker.setValue(controlId.PRESETS_FIXED, "" + p);
-        applyPresetFixed(p);
+        if (mode === Mode.FIXED) {
+            applyPresetFixed(p);
+        }
     }
 
     public static set presetMovement(p: number) {
         Picker.setValue(controlId.PRESETS_MOVEMENT, "" + p);
-        applyPresetMovement(p);
+        if (mode === Mode.MOVEMENT) {
+            applyPresetMovement(p);
+        }
     }
 
     public static get poles(): number {

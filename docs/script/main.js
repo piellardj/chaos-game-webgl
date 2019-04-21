@@ -1284,7 +1284,9 @@ var Parameters = (function () {
     Object.defineProperty(Parameters, "presetFixed", {
         set: function (p) {
             Picker.setValue(controlId.PRESETS_FIXED, "" + p);
-            applyPresetFixed(p);
+            if (mode === Mode.FIXED) {
+                applyPresetFixed(p);
+            }
         },
         enumerable: true,
         configurable: true
@@ -1292,7 +1294,9 @@ var Parameters = (function () {
     Object.defineProperty(Parameters, "presetMovement", {
         set: function (p) {
             Picker.setValue(controlId.PRESETS_MOVEMENT, "" + p);
-            applyPresetMovement(p);
+            if (mode === Mode.MOVEMENT) {
+                applyPresetMovement(p);
+            }
         },
         enumerable: true,
         configurable: true
