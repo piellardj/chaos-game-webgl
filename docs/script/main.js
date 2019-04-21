@@ -345,6 +345,15 @@ function downloadCanvas(game, size, nbPointsForCurrentSize) {
     function adjustNbPointsForWantedSize(nbPoints) {
         return nbPoints * Math.pow(size / canvasHeight, 2);
     }
+    var nbPointsNeeded = adjustNbPointsForWantedSize(nbPointsForCurrentSize);
+    if (nbPointsNeeded > 50000000) {
+        var message = "Rendering your image will take a while " +
+            "because it requires to draw " + nbPointsNeeded.toLocaleString() + " points. " +
+            "Do you want to proceed?";
+        if (!confirm(message)) {
+            return;
+        }
+    }
     function isolateCanvas() {
         Canvas.showLoader(true);
         canvas.style.position = "absolute";
@@ -364,7 +373,6 @@ function downloadCanvas(game, size, nbPointsForCurrentSize) {
     }
     isolateCanvas();
     gl_canvas_1.gl.clear(gl_canvas_1.gl.COLOR_BUFFER_BIT);
-    var nbPointsNeeded = adjustNbPointsForWantedSize(nbPointsForCurrentSize);
     var nbPointsDrawn = 0;
     if (parameters_1.Parameters.mode === parameters_1.Mode.FIXED) {
         var pointsPerStep = 524288;

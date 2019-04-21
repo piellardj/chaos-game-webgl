@@ -19,6 +19,16 @@ function downloadCanvas(game: Game, size: number, nbPointsForCurrentSize: number
         return nbPoints * Math.pow(size / canvasHeight, 2);
     }
 
+    const nbPointsNeeded = adjustNbPointsForWantedSize(nbPointsForCurrentSize);
+    if (nbPointsNeeded > 50000000) {
+        const message = "Rendering your image will take a while " +
+            "because it requires to draw " + nbPointsNeeded.toLocaleString() + " points. " +
+            "Do you want to proceed?";
+        if (!confirm(message)) {
+            return;
+        }
+    }
+
     function isolateCanvas() {
         Canvas.showLoader(true);
 
@@ -43,7 +53,6 @@ function downloadCanvas(game: Game, size: number, nbPointsForCurrentSize: number
     isolateCanvas();
 
     gl.clear(gl.COLOR_BUFFER_BIT);
-    const nbPointsNeeded = adjustNbPointsForWantedSize(nbPointsForCurrentSize);
     let nbPointsDrawn = 0;
 
     if (Parameters.mode === Mode.FIXED) {
