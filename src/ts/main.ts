@@ -32,7 +32,7 @@ function main() {
     let totalPoints: number;
     function setTotalPoints(total: number): void {
         totalPoints = total;
-        Canvas.setIndicatorText("Points drawn", totalPoints.toLocaleString());
+        Canvas.setIndicatorText("points-drawn", totalPoints.toLocaleString());
     }
     setTotalPoints(0);
 

@@ -348,12 +348,12 @@ function applyMode(newMode: Mode): void {
             }
         }
 
-        Controls.toggleVisibility(controlId.PRESETS_FIXED, isFixed);
-        Controls.toggleVisibility(controlId.DISTANCE, isFixed);
+        Controls.setVisibility(controlId.PRESETS_FIXED, isFixed);
+        Controls.setVisibility(controlId.DISTANCE, isFixed);
 
-        Controls.toggleVisibility(controlId.PRESETS_MOVEMENT, !isFixed!);
-        Controls.toggleVisibility(controlId.DISTANCE_FROM, !isFixed);
-        Controls.toggleVisibility(controlId.DISTANCE_TO, !isFixed);
+        Controls.setVisibility(controlId.PRESETS_MOVEMENT, !isFixed!);
+        Controls.setVisibility(controlId.DISTANCE_FROM, !isFixed);
+        Controls.setVisibility(controlId.DISTANCE_TO, !isFixed);
 
         for (const observer of modeChangeObservers) {
             observer(newMode);

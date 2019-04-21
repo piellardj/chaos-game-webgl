@@ -1052,7 +1052,7 @@ function main() {
     var totalPoints;
     function setTotalPoints(total) {
         totalPoints = total;
-        Canvas.setIndicatorText("Points drawn", totalPoints.toLocaleString());
+        Canvas.setIndicatorText("points-drawn", totalPoints.toLocaleString());
     }
     setTotalPoints(0);
     function clearCanvas() {
@@ -1523,11 +1523,11 @@ function applyMode(newMode) {
                 applyPresetMovement(+presetId);
             }
         }
-        Controls.toggleVisibility(controlId.PRESETS_FIXED, isFixed);
-        Controls.toggleVisibility(controlId.DISTANCE, isFixed);
-        Controls.toggleVisibility(controlId.PRESETS_MOVEMENT, !isFixed);
-        Controls.toggleVisibility(controlId.DISTANCE_FROM, !isFixed);
-        Controls.toggleVisibility(controlId.DISTANCE_TO, !isFixed);
+        Controls.setVisibility(controlId.PRESETS_FIXED, isFixed);
+        Controls.setVisibility(controlId.DISTANCE, isFixed);
+        Controls.setVisibility(controlId.PRESETS_MOVEMENT, !isFixed);
+        Controls.setVisibility(controlId.DISTANCE_FROM, !isFixed);
+        Controls.setVisibility(controlId.DISTANCE_TO, !isFixed);
         for (var _i = 0, modeChangeObservers_1 = modeChangeObservers; _i < modeChangeObservers_1.length; _i++) {
             var observer = modeChangeObservers_1[_i];
             observer(newMode);

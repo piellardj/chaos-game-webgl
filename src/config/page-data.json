@@ -13,7 +13,10 @@
         "script/main.js"
     ],
     "indicators": [
-        "Points drawn"
+        {
+            "id": "points-drawn",
+            "label": "Points drawn"
+        }
     ],
     "canvas": {
         "width": 512,
