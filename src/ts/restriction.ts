@@ -1,4 +1,4 @@
-import Parameters from "./parameters";
+import { Parameters } from "./parameters";
 
 enum Restriction {
     NONE = "none", // no restriction

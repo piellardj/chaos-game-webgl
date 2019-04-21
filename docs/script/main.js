@@ -124,7 +124,7 @@ var gl_resource_1 = __importDefault(__webpack_require__(/*! ./gl-utils/gl-resour
 var ShaderManager = __importStar(__webpack_require__(/*! ./gl-utils/shader-manager */ "./src/ts/gl-utils/shader-manager.ts"));
 var vbo_1 = __importDefault(__webpack_require__(/*! ./gl-utils/vbo */ "./src/ts/gl-utils/vbo.ts"));
 var colors_1 = __importDefault(__webpack_require__(/*! ./colors */ "./src/ts/colors.ts"));
-var parameters_1 = __importDefault(__webpack_require__(/*! ./parameters */ "./src/ts/parameters.ts"));
+var parameters_1 = __webpack_require__(/*! ./parameters */ "./src/ts/parameters.ts");
 var Attractors = __importStar(__webpack_require__(/*! ./restriction */ "./src/ts/restriction.ts"));
 var ChaosGame = (function (_super) {
     __extends(ChaosGame, _super);
@@ -136,13 +136,13 @@ var ChaosGame = (function (_super) {
         Canvas.Observers.mouseDrag.push(function (dX, dY) {
             var canvasSize = Canvas.getSize();
             var aspectRatio = canvasSize[0] / canvasSize[1];
-            _this._viewCenter[0] -= 2 * dX * parameters_1.default.scale * aspectRatio;
-            _this._viewCenter[1] += 2 * dY * parameters_1.default.scale;
+            _this._viewCenter[0] -= 2 * dX * parameters_1.Parameters.scale * aspectRatio;
+            _this._viewCenter[1] += 2 * dY * parameters_1.Parameters.scale;
         });
-        parameters_1.default.resetViewObservers.push(function () {
+        parameters_1.Parameters.resetViewObservers.push(function () {
             _this._viewCenter = [0, 0];
         });
-        _this.recomputePolesPositions(parameters_1.default.poles);
+        _this.recomputePolesPositions(parameters_1.Parameters.poles);
         _this._shader = null;
         ShaderManager.buildShader({
             fragmentFilename: "points.frag",
@@ -192,8 +192,8 @@ var ChaosGame = (function (_super) {
         var canvas = Canvas.getSize();
         var aspectRatio = canvas[0] / canvas[1];
         var absoluteToViewport = function (point) { return [
-            ((point[0] - _this._viewCenter[0]) / (parameters_1.default.scale * aspectRatio)),
-            ((point[1] - _this._viewCenter[1]) / parameters_1.default.scale),
+            ((point[0] - _this._viewCenter[0]) / (parameters_1.Parameters.scale * aspectRatio)),
+            ((point[1] - _this._viewCenter[1]) / parameters_1.Parameters.scale),
         ]; };
         var poles = new Float32Array(2 * nbPoles);
         var dAngle = -2 * Math.PI / nbPoles;
@@ -209,7 +209,7 @@ var ChaosGame = (function (_super) {
         return poles;
     };
     ChaosGame.prototype.computeXPoints = function (N, distance) {
-        var nbPoles = parameters_1.default.poles;
+        var nbPoles = parameters_1.Parameters.poles;
         Attractors.clearHistory();
         var choosePole = Attractors.getChooseFunction();
         var poles = this.recomputePolesPositions(nbPoles);
@@ -228,7 +228,7 @@ var ChaosGame = (function (_super) {
             data: data,
             sets: [],
         };
-        if (parameters_1.default.colors) {
+        if (parameters_1.Parameters.colors) {
             var maxSizePerPole = Math.floor(N / nbPoles);
             for (var i = 0; i < nbPoles; ++i) {
                 result.sets.push({
@@ -338,7 +338,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var GLCanvas = __importStar(__webpack_require__(/*! ./gl-utils/gl-canvas */ "./src/ts/gl-utils/gl-canvas.ts"));
 var gl_canvas_1 = __webpack_require__(/*! ./gl-utils/gl-canvas */ "./src/ts/gl-utils/gl-canvas.ts");
 var viewport_1 = __importDefault(__webpack_require__(/*! ./gl-utils/viewport */ "./src/ts/gl-utils/viewport.ts"));
-var parameters_1 = __importDefault(__webpack_require__(/*! ./parameters */ "./src/ts/parameters.ts"));
+var parameters_1 = __webpack_require__(/*! ./parameters */ "./src/ts/parameters.ts");
 function downloadCanvas(game, size, nbPointsForCurrentSize) {
     var canvas = Canvas.getCanvas();
     var canvasHeight = Canvas.getSize()[1];
@@ -366,24 +366,24 @@ function downloadCanvas(game, size, nbPointsForCurrentSize) {
     gl_canvas_1.gl.clear(gl_canvas_1.gl.COLOR_BUFFER_BIT);
     var nbPointsNeeded = adjustNbPointsForWantedSize(nbPointsForCurrentSize);
     var nbPointsDrawn = 0;
-    if (parameters_1.default.mode === "fixed") {
+    if (parameters_1.Parameters.mode === parameters_1.Mode.FIXED) {
         var pointsPerStep = 524288;
-        var distance = parameters_1.default.distance;
+        var distance = parameters_1.Parameters.distance;
         while (nbPointsDrawn < nbPointsNeeded) {
             nbPointsDrawn += pointsPerStep;
-            game.draw(pointsPerStep, distance, parameters_1.default.quality);
+            game.draw(pointsPerStep, distance, parameters_1.Parameters.quality);
         }
     }
     else {
-        var pointsPerStep = adjustNbPointsForWantedSize(Math.pow(2, parameters_1.default.speed - 1));
-        var distance = parameters_1.default.distanceFrom;
+        var pointsPerStep = adjustNbPointsForWantedSize(Math.pow(2, parameters_1.Parameters.speed - 1));
+        var distance = parameters_1.Parameters.distanceFrom;
         while (nbPointsDrawn < nbPointsNeeded) {
             distance += 0.002;
-            if (distance > parameters_1.default.distanceTo) {
-                distance = parameters_1.default.distanceFrom;
+            if (distance > parameters_1.Parameters.distanceTo) {
+                distance = parameters_1.Parameters.distanceFrom;
             }
             nbPointsDrawn += pointsPerStep;
-            game.draw(pointsPerStep, distance, parameters_1.default.quality);
+            game.draw(pointsPerStep, distance, parameters_1.Parameters.quality);
         }
     }
     var downloadedName = "chaos-game.png";
@@ -1033,16 +1033,16 @@ var gl_canvas_1 = __webpack_require__(/*! ./gl-utils/gl-canvas */ "./src/ts/gl-u
 var viewport_1 = __importDefault(__webpack_require__(/*! ./gl-utils/viewport */ "./src/ts/gl-utils/viewport.ts"));
 var chaos_game_1 = __importDefault(__webpack_require__(/*! ./chaos-game */ "./src/ts/chaos-game.ts"));
 var downloader_1 = __importDefault(__webpack_require__(/*! ./downloader */ "./src/ts/downloader.ts"));
-var parameters_1 = __importDefault(__webpack_require__(/*! ./parameters */ "./src/ts/parameters.ts"));
+var parameters_1 = __webpack_require__(/*! ./parameters */ "./src/ts/parameters.ts");
 function main() {
     initGL();
     Canvas.showLoader(true);
-    parameters_1.default.quality = 0.6;
-    parameters_1.default.speed = 17;
-    parameters_1.default.autorun = true;
-    parameters_1.default.colors = false;
-    parameters_1.default.presetFixed = 15;
-    parameters_1.default.presetMovement = 0;
+    parameters_1.Parameters.quality = 0.6;
+    parameters_1.Parameters.speed = 17;
+    parameters_1.Parameters.autorun = true;
+    parameters_1.Parameters.colors = false;
+    parameters_1.Parameters.presetFixed = 15;
+    parameters_1.Parameters.presetMovement = 0;
     var needToAdjustCanvasSize = true;
     var needToClearCanvas = true;
     var needToDisplayPreview = false;
@@ -1071,7 +1071,7 @@ function main() {
                 needToAdjustCanvasSize = false;
                 needToClearCanvas = true;
             }
-            needToClearCanvas = needToClearCanvas || (isPreview && parameters_1.default.autorun);
+            needToClearCanvas = needToClearCanvas || (isPreview && parameters_1.Parameters.autorun);
             if (needToClearCanvas) {
                 clearCanvas();
                 isPreview = false;
@@ -1083,19 +1083,19 @@ function main() {
                 needToDisplayPreview = false;
                 isPreview = true;
             }
-            if (parameters_1.default.autorun) {
-                if (parameters_1.default.mode === "movement") {
+            if (parameters_1.Parameters.autorun) {
+                if (parameters_1.Parameters.mode === parameters_1.Mode.MOVEMENT) {
                     distance += 0.002;
-                    if (distance > parameters_1.default.distanceTo) {
-                        distance = parameters_1.default.distanceFrom;
+                    if (distance > parameters_1.Parameters.distanceTo) {
+                        distance = parameters_1.Parameters.distanceFrom;
                     }
                 }
                 else {
-                    distance = parameters_1.default.distance;
+                    distance = parameters_1.Parameters.distance;
                 }
-                var nbPoints = Math.pow(2, parameters_1.default.speed - 1);
+                var nbPoints = Math.pow(2, parameters_1.Parameters.speed - 1);
                 setTotalPoints(totalPoints + nbPoints);
-                game.draw(nbPoints, distance, parameters_1.default.quality);
+                game.draw(nbPoints, distance, parameters_1.Parameters.quality);
                 if (firstDraw) {
                     firstDraw = false;
                     Canvas.showLoader(false);
@@ -1121,20 +1121,20 @@ function main() {
         gl_canvas_1.gl.blendFunc(gl_canvas_1.gl.ONE, gl_canvas_1.gl.ONE);
     }
     function bindEvents() {
-        parameters_1.default.clearObservers.push(function () {
+        parameters_1.Parameters.clearObservers.push(function () {
             needToClearCanvas = true;
-            if (parameters_1.default.mode === "movement") {
-                distance = parameters_1.default.distanceFrom;
+            if (parameters_1.Parameters.mode === parameters_1.Mode.MOVEMENT) {
+                distance = parameters_1.Parameters.distanceFrom;
             }
         });
-        parameters_1.default.previewObservers.push(function () { return needToDisplayPreview = true; });
+        parameters_1.Parameters.previewObservers.push(function () { return needToDisplayPreview = true; });
         Canvas.Observers.canvasResize.push(function () { return needToAdjustCanvasSize = true; });
         var initDistance = function (mode) {
-            return distance = (mode === "fixed") ? parameters_1.default.distance : parameters_1.default.distanceFrom;
+            return distance = (mode === parameters_1.Mode.FIXED) ? parameters_1.Parameters.distance : parameters_1.Parameters.distanceFrom;
         };
-        initDistance(parameters_1.default.mode);
-        parameters_1.default.modeChangeObservers.push(initDistance);
-        parameters_1.default.downloadObservers.push(function (wantedSize) {
+        initDistance(parameters_1.Parameters.mode);
+        parameters_1.Parameters.modeChangeObservers.push(initDistance);
+        parameters_1.Parameters.downloadObservers.push(function (wantedSize) {
             lockedCanvas = true;
             downloader_1.default(game, wantedSize, totalPoints);
             lockedCanvas = false;
@@ -1387,6 +1387,7 @@ var Parameters = (function () {
     });
     return Parameters;
 }());
+exports.Parameters = Parameters;
 function restartRendering() {
     callObservers(observers.clear);
     Parameters.autorun = true;
@@ -1509,6 +1510,7 @@ var Mode;
     Mode["FIXED"] = "fixed";
     Mode["MOVEMENT"] = "movement";
 })(Mode || (Mode = {}));
+exports.Mode = Mode;
 var modeChangeObservers = [];
 var mode;
 function applyMode(newMode) {
@@ -1548,7 +1550,6 @@ Picker.addObserver(controlId.RESTRICTIONS, function (v) {
     clearPresetMovement();
     restartRendering();
 });
-exports.default = Parameters;
 
 
 /***/ }),
@@ -1763,11 +1764,8 @@ exports.getPreset = getPreset;
 
 "use strict";
 
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var parameters_1 = __importDefault(__webpack_require__(/*! ./parameters */ "./src/ts/parameters.ts"));
+var parameters_1 = __webpack_require__(/*! ./parameters */ "./src/ts/parameters.ts");
 var Restriction;
 (function (Restriction) {
     Restriction["NONE"] = "none";
@@ -1779,7 +1777,7 @@ var Restriction;
 })(Restriction || (Restriction = {}));
 exports.Restriction = Restriction;
 function getChooseFunction() {
-    switch (parameters_1.default.restriction) {
+    switch (parameters_1.Parameters.restriction) {
         case Restriction.NONE:
             return chooseAny;
         case Restriction.NO_REPEAT:

@@ -4,7 +4,7 @@ import Viewport from "./gl-utils/viewport";
 
 import Game from "./chaos-game";
 import DownloadCanvas from "./downloader";
-import Parameters from "./parameters";
+import { Mode, Parameters } from "./parameters";
 
 declare const Button: any;
 declare const Canvas: any;
@@ -70,7 +70,7 @@ function main() {
             }
 
             if (Parameters.autorun) {
-                if (Parameters.mode === "movement") {
+                if (Parameters.mode === Mode.MOVEMENT) {
                     distance += 0.002;
 
                     if (distance > Parameters.distanceTo) {
@@ -116,7 +116,7 @@ function main() {
     function bindEvents() {
         Parameters.clearObservers.push(() => {
             needToClearCanvas = true;
-            if (Parameters.mode === "movement") {
+            if (Parameters.mode === Mode.MOVEMENT) {
                 distance = Parameters.distanceFrom;
             }
         });
@@ -124,7 +124,7 @@ function main() {
         Canvas.Observers.canvasResize.push(() => needToAdjustCanvasSize = true);
 
         const initDistance = (mode: string) => {
-            return distance = (mode === "fixed") ? Parameters.distance : Parameters.distanceFrom;
+            return distance = (mode === Mode.FIXED) ? Parameters.distance : Parameters.distanceFrom;
         };
         initDistance(Parameters.mode);
         Parameters.modeChangeObservers.push(initDistance);

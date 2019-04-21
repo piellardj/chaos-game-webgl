@@ -5,7 +5,7 @@ import * as ShaderManager from "./gl-utils/shader-manager";
 import VBO from "./gl-utils/vbo";
 
 import ColorFromHue from "./colors";
-import Parameters from "./parameters";
+import { Parameters } from "./parameters";
 
 import * as Attractors from "./restriction";
 
@@ -172,8 +172,8 @@ class ChaosGame extends GLResource {
 
             for (let iP = 0; iP < N; ++iP) {
                 const pole = nextPos();
-                if (result.sets[pole].size + 1 < maxSizePerPole)  {
-                    const index = 2 * (result.sets[pole].from  + result.sets[pole].size);
+                if (result.sets[pole].size + 1 < maxSizePerPole) {
+                    const index = 2 * (result.sets[pole].from + result.sets[pole].size);
                     result.data[index + 0] = pos[0];
                     result.data[index + 1] = pos[1];
                     result.sets[pole].size++;

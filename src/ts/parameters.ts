@@ -376,4 +376,7 @@ Picker.addObserver(controlId.RESTRICTIONS, (v: string) => {
     restartRendering();
 });
 
-export default Parameters;
+export {
+    Mode,
+    Parameters,
+}

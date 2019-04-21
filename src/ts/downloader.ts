@@ -3,7 +3,7 @@ import { gl } from "./gl-utils/gl-canvas";
 import Viewport from "./gl-utils/viewport";
 
 import Game from "./chaos-game";
-import Parameters from "./parameters";
+import { Mode, Parameters } from "./parameters";
 
 declare const Canvas: any;
 
@@ -46,7 +46,7 @@ function downloadCanvas(game: Game, size: number, nbPointsForCurrentSize: number
     const nbPointsNeeded = adjustNbPointsForWantedSize(nbPointsForCurrentSize);
     let nbPointsDrawn = 0;
 
-    if (Parameters.mode === "fixed") {
+    if (Parameters.mode === Mode.FIXED) {
         const pointsPerStep = 524288; // arbitrary, points per step don"t matter in fixed mode
         const distance = Parameters.distance;
 
