@@ -58,7 +58,7 @@
                     "step": 0.1
                 },
                 {
-                    "title": "Rainbow",
+                    "title": "Colored",
                     "type": "checkbox",
                     "id": "colors-checkbox-id",
                     "checked": false
