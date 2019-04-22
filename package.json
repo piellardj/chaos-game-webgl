@@ -1,6 +1,6 @@
 {
   "name": "chaos-game-webgl",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "homepage": "https://piellardj.github.io/chaos-game-webgl",
   "description": "WebGL Chaos Game implementation",
   "main": "build/index.js",
