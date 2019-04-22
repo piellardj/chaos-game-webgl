@@ -270,10 +270,6 @@
                         {
                             "value": "no-right-neighbour",
                             "label": "No right neighbour"
-                        },
-                        {
-                            "value": "no-right-neighbour-after-repeat",
-                            "label": "No right neighbour if previous was repeat"
                         }
                     ]
                 }
