@@ -1,6 +1,7 @@
 {
-  "name": "chaos-game-webg",
+  "name": "chaos-game-webgl",
   "version": "0.0.1",
+  "homepage": "https://piellardj.github.io/chaos-game-webgl",
   "description": "WebGL Chaos Game implementation",
   "main": "build/index.js",
   "scripts": {
@@ -16,6 +17,7 @@
     "webpack-prod": "webpack --config src/config/webpack.config.js --mode=production --output docs/script/main.min.js"
   },
   "author": "“Jérémie PIELLARD <jeremie.piellard@gmail.com> (https://github.com/piellardj)",
+  "repository": "github:piellardj/chaos-game-webgl",
   "license": "ISC",
   "devDependencies": {
     "fs-extra": "^7.0.1",
