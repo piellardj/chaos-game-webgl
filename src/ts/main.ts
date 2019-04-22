@@ -61,15 +61,14 @@ function main() {
                 isPreview = false;
             }
 
+            needToDisplayPreview = needToDisplayPreview || Canvas.isMouseDown();
             if (needToDisplayPreview) {
                 const nbPoints = Math.pow(2, 17);
                 game.draw(nbPoints, distance, 0);
                 setTotalPoints(nbPoints);
                 needToDisplayPreview = false;
                 isPreview = true;
-            }
-
-            if (Parameters.autorun) {
+            } else if (Parameters.autorun) {
                 if (Parameters.mode === Mode.MOVEMENT) {
                     distance += 0.002;
 

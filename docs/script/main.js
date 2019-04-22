@@ -1084,6 +1084,7 @@ function main() {
                 clearCanvas();
                 isPreview = false;
             }
+            needToDisplayPreview = needToDisplayPreview || Canvas.isMouseDown();
             if (needToDisplayPreview) {
                 var nbPoints = Math.pow(2, 17);
                 game.draw(nbPoints, distance, 0);
@@ -1091,7 +1092,7 @@ function main() {
                 needToDisplayPreview = false;
                 isPreview = true;
             }
-            if (parameters_1.Parameters.autorun) {
+            else if (parameters_1.Parameters.autorun) {
                 if (parameters_1.Parameters.mode === parameters_1.Mode.MOVEMENT) {
                     distance += 0.002;
                     if (distance > parameters_1.Parameters.distanceTo) {
