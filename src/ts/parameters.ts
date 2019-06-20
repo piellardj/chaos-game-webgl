@@ -15,12 +15,18 @@ function clamp(x: number, minVal: number, maxVal: number): number {
     return Math.min(maxVal, Math.max(minVal, x));
 }
 
+enum Theme {
+    DARK = "dark",
+    LIGHT = "light",
+}
+
 /* === IDs ============================================================ */
 const controlId = {
     AUTORUN: "autorun-checkbox-id",
     RESET: "reset-button-id",
     SPEED: "speed-range-id",
     QUALITY: "quality-range-id",
+    THEME: "theme",
     COLORS: "colors-checkbox-id",
 
     MODE: "mode",
@@ -103,6 +109,10 @@ class Parameters {
     public static set quality(d: number) {
         quality = d;
         Range.setValue(controlId.QUALITY, quality);
+    }
+
+    public static get theme(): Theme {
+        return theme;
     }
 
     public static get colors(): boolean {
@@ -228,6 +238,14 @@ Range.addObserver(controlId.QUALITY, (q: number) => {
     quality = q;
     restartRendering();
 });
+
+let theme: Theme;
+function setTheme(t: Theme) {
+    theme = t;
+    restartRendering();
+}
+setTheme(Tabs.getValues(controlId.THEME)[0] as Theme);
+Tabs.addObserver(controlId.THEME, (v: string[]) => setTheme(v[0] as Theme));
 
 let colors: boolean = Checkbox.isChecked(controlId.COLORS);
 Checkbox.addObserver(controlId.COLORS, (checked: boolean) => {
@@ -379,4 +397,5 @@ Picker.addObserver(controlId.RESTRICTIONS, (v: string) => {
 export {
     Mode,
     Parameters,
+    Theme,
 };

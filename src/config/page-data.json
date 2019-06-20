@@ -58,6 +58,23 @@
                     "step": 0.1
                 },
                 {
+                    "title": "Theme",
+                    "type": "tabs",
+                    "id": "theme",
+                    "unique": true,
+                    "options": [
+                        {
+                            "value": "dark",
+                            "label": "Dark",
+                            "checked": true
+                        },
+                        {
+                            "value": "light",
+                            "label": "Light"
+                        }
+                    ]
+                },
+                {
                     "title": "Colored",
                     "type": "checkbox",
                     "id": "colors-checkbox-id",

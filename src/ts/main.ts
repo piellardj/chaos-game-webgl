@@ -4,7 +4,7 @@ import Viewport from "./gl-utils/viewport";
 
 import Game from "./chaos-game";
 import DownloadCanvas from "./downloader";
-import { Mode, Parameters } from "./parameters";
+import { Mode, Parameters, Theme } from "./parameters";
 
 declare const Button: any;
 declare const Canvas: any;
@@ -37,6 +37,14 @@ function main() {
     setTotalPoints(0);
 
     function clearCanvas() {
+        if (Parameters.theme === Theme.LIGHT) {
+            gl.clearColor(1, 1, 1, 1);
+            gl.blendEquation(gl.FUNC_REVERSE_SUBTRACT);
+        } else {
+            gl.clearColor(0, 0, 0, 1);
+            gl.blendEquation(gl.FUNC_ADD);
+        }
+
         gl.clear(gl.COLOR_BUFFER_BIT);
         setTotalPoints(0);
         needToClearCanvas = false;
@@ -107,8 +115,6 @@ function main() {
         }
 
         gl.enable(gl.BLEND);
-        gl.clearColor(0, 0, 0, 1);
-        gl.blendEquation(gl.FUNC_ADD);
         gl.blendFunc(gl.ONE, gl.ONE);
     }
 

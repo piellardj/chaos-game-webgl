@@ -1064,6 +1064,14 @@ function main() {
     }
     setTotalPoints(0);
     function clearCanvas() {
+        if (parameters_1.Parameters.theme === parameters_1.Theme.LIGHT) {
+            gl_canvas_1.gl.clearColor(1, 1, 1, 1);
+            gl_canvas_1.gl.blendEquation(gl_canvas_1.gl.FUNC_REVERSE_SUBTRACT);
+        }
+        else {
+            gl_canvas_1.gl.clearColor(0, 0, 0, 1);
+            gl_canvas_1.gl.blendEquation(gl_canvas_1.gl.FUNC_ADD);
+        }
         gl_canvas_1.gl.clear(gl_canvas_1.gl.COLOR_BUFFER_BIT);
         setTotalPoints(0);
         needToClearCanvas = false;
@@ -1125,8 +1133,6 @@ function main() {
             return;
         }
         gl_canvas_1.gl.enable(gl_canvas_1.gl.BLEND);
-        gl_canvas_1.gl.clearColor(0, 0, 0, 1);
-        gl_canvas_1.gl.blendEquation(gl_canvas_1.gl.FUNC_ADD);
         gl_canvas_1.gl.blendFunc(gl_canvas_1.gl.ONE, gl_canvas_1.gl.ONE);
     }
     function bindEvents() {
@@ -1178,11 +1184,18 @@ var PresetsMovement = __importStar(__webpack_require__(/*! ./presets-movement */
 function clamp(x, minVal, maxVal) {
     return Math.min(maxVal, Math.max(minVal, x));
 }
+var Theme;
+(function (Theme) {
+    Theme["DARK"] = "dark";
+    Theme["LIGHT"] = "light";
+})(Theme || (Theme = {}));
+exports.Theme = Theme;
 var controlId = {
     AUTORUN: "autorun-checkbox-id",
     RESET: "reset-button-id",
     SPEED: "speed-range-id",
     QUALITY: "quality-range-id",
+    THEME: "theme",
     COLORS: "colors-checkbox-id",
     MODE: "mode",
     PRESETS_FIXED: "presets-fixed-picker-id",
@@ -1261,6 +1274,13 @@ var Parameters = (function () {
         set: function (d) {
             quality = d;
             Range.setValue(controlId.QUALITY, quality);
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Parameters, "theme", {
+        get: function () {
+            return theme;
         },
         enumerable: true,
         configurable: true
@@ -1424,6 +1444,13 @@ Range.addObserver(controlId.QUALITY, function (q) {
     quality = q;
     restartRendering();
 });
+var theme;
+function setTheme(t) {
+    theme = t;
+    restartRendering();
+}
+setTheme(Tabs.getValues(controlId.THEME)[0]);
+Tabs.addObserver(controlId.THEME, function (v) { return setTheme(v[0]); });
 var colors = Checkbox.isChecked(controlId.COLORS);
 Checkbox.addObserver(controlId.COLORS, function (checked) {
     colors = checked;
