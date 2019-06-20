@@ -24,64 +24,6 @@
     },
     "controlsSections": [
         {
-            "title": "Rendering",
-            "controls": [
-                {
-                    "title": "Keep drawing",
-                    "type": "checkbox",
-                    "id": "autorun-checkbox-id",
-                    "checked": true
-                },
-                {
-                    "type": "button",
-                    "id": "reset-button-id",
-                    "label": "Clear canvas",
-                    "flat": true
-                },
-                {
-                    "title": "Batch size",
-                    "type": "range",
-                    "id": "speed-range-id",
-                    "min": 1,
-                    "max": 20,
-                    "value": 15,
-                    "step": 1
-                },
-                {
-                    "title": "Quality",
-                    "type": "range",
-                    "id": "quality-range-id",
-                    "min": 0,
-                    "max": 1,
-                    "value": 0.6,
-                    "step": 0.1
-                },
-                {
-                    "title": "Theme",
-                    "type": "tabs",
-                    "id": "theme",
-                    "unique": true,
-                    "options": [
-                        {
-                            "value": "dark",
-                            "label": "Dark",
-                            "checked": true
-                        },
-                        {
-                            "value": "light",
-                            "label": "Light"
-                        }
-                    ]
-                },
-                {
-                    "title": "Colored",
-                    "type": "checkbox",
-                    "id": "colors-checkbox-id",
-                    "checked": false
-                }
-            ]
-        },
-        {
             "title": "Parameters",
             "controls": [
                 {
@@ -292,7 +234,65 @@
             ]
         },
         {
-            "title": "Result",
+            "title": "Rendering",
+            "controls": [
+                {
+                    "title": "Keep drawing",
+                    "type": "checkbox",
+                    "id": "autorun-checkbox-id",
+                    "checked": true
+                },
+                {
+                    "title": "Batch size",
+                    "type": "range",
+                    "id": "speed-range-id",
+                    "min": 1,
+                    "max": 20,
+                    "value": 15,
+                    "step": 1
+                },
+                {
+                    "title": "Quality",
+                    "type": "range",
+                    "id": "quality-range-id",
+                    "min": 0,
+                    "max": 1,
+                    "value": 0.6,
+                    "step": 0.1
+                },
+                {
+                    "title": "Theme",
+                    "type": "tabs",
+                    "id": "theme",
+                    "unique": true,
+                    "options": [
+                        {
+                            "value": "dark",
+                            "label": "Dark",
+                            "checked": true
+                        },
+                        {
+                            "value": "light",
+                            "label": "Light"
+                        }
+                    ]
+                },
+                {
+                    "title": "Colored",
+                    "type": "checkbox",
+                    "id": "colors-checkbox-id",
+                    "checked": false
+                },
+                {
+                    "type": "button",
+                    "id": "reset-button-id",
+                    "label": "Clear canvas",
+                    "flat": true
+                }
+            ]
+        },
+        {
+            "title": "Download",
             "controls": [
                 {
                     "title": "Image size",

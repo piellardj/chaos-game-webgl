@@ -587,244 +587,6 @@ const Controls = (function() {
     });
 })();
 
-/* exported Checkbox */
-const Checkbox = (function() {
-    /**
-     * @param {string} id
-     * @return {Object} Html node or null if not found
-     */
-    function getCheckboxFromId(id) {
-        const selector = "input[type=checkbox][id=" + id + "]";
-        const elt = document.querySelector(selector);
-        if (!elt) {
-            console.error("Cannot find checkbox '" + selector + "'.");
-        }
-        return elt;
-    }
-
-    return Object.freeze({
-        /**
-         * @param {string} checkboxId
-         * @param {Object} observer Callback method
-         * @return {boolean} Whether or not the observer was added
-         */
-        addObserver: function(checkboxId, observer) {
-            const elt = getCheckboxFromId(checkboxId);
-            if (elt) {
-                elt.addEventListener("change", function(event) {
-                    event.stopPropagation();
-                    observer(event.target.checked);
-                }, false);
-                return true;
-            }
-
-            return false;
-        },
-
-        /**
-         * @param {string} checkboxId
-         * @param {boolean} value
-         * @return {void}
-         */
-        setChecked: function(checkboxId, value) {
-            const elt = getCheckboxFromId(checkboxId);
-            if (elt) {
-                elt.checked = value ? true : false;
-            }
-        },
-
-        /**
-         * @param {string} checkboxId
-         * @return {boolean}
-         */
-        isChecked: function(checkboxId) {
-            const elt = getCheckboxFromId(checkboxId);
-            return elt && elt.checked;
-        },
-    });
-})();
-
-/* exported Button */
-const Button = (function() {
-    /**
-     * @param {string} id
-     * @return {Object} Html node or null if not found
-     */
-    function getButtonById(id) {
-        const selector = "button[id=" + id + "]";
-        const elt = document.querySelector(selector);
-        if (!elt) {
-            console.error("Cannot find button '" + checkboxId + "'.");
-        }
-        return elt;
-    }
-
-    return Object.freeze({
-        /**
-         * @param {string} buttonId
-         * @param {Object} observer Callback function
-         * @return {boolean} Whether or not the observer was added
-         */
-        addObserver: function(buttonId, observer) {
-            const elt = getButtonById(buttonId);
-            if (elt) {
-                elt.addEventListener("click", function(event) {
-                    event.stopPropagation();
-                    observer();
-                }, false);
-                return true;
-            }
-
-            return false;
-        },
-
-        /**
-         * @param {string} buttonId
-         * @param {string} label
-         */
-        setLabel: function(buttonId, label) {
-            const elt = getButtonById(buttonId);
-            if (elt) {
-                elt.innerText = label;
-            }
-        },
-    });
-})();
-
-/* exported Range */
-const Range = (function() {
-    /**
-     * @param {Object} elt Html node element
-     * @return {boolean}
-     */
-    function isRangeElement(elt) {
-        return elt.type && elt.type.toLowerCase() === "range";
-    }
-
-    /**
-     * @param {string} id
-     * @return {Object} Html node or null if not found
-     */
-    function getRangeById(id) {
-        const selector = "input[type=range][id=" + id + "]";
-        const elt = document.querySelector(selector);
-        if (!elt) {
-            console.error("Cannot find range '" + selector + "'.");
-        }
-        return elt;
-    }
-
-    /**
-     * @param {string} rangeId
-     * @param {Object} observer Callback method
-     * @param {string} eventName Event on which the callback is called
-     * @return {boolean} Whether or not the observer was added
-     */
-    function addObserver(rangeId, observer, eventName) {
-        const elt = getRangeById(rangeId);
-        if (elt) {
-            elt.addEventListener(eventName, function(event) {
-                event.stopPropagation();
-                observer(+elt.value);
-            }, false);
-            return true;
-        }
-
-        return false;
-    }
-
-    const thumbSize = 16;
-    /**
-     *
-     * @param {Object} range    Node element
-     * @param {Object} tooltip  Node element
-     * @return {void}
-     */
-    function updateTooltipPosition(range, tooltip) {
-        tooltip.textContent = range.value;
-
-        const bodyRect = document.body.getBoundingClientRect();
-        const rangeRect = range.getBoundingClientRect();
-        const tooltipRect = tooltip.getBoundingClientRect();
-
-        const percentage = (range.value - range.min) / (range.max - range.min);
-
-        const top = (rangeRect.top - tooltipRect.height - bodyRect.top) - 4;
-        const middle = percentage * (rangeRect.width - thumbSize) +
-            (rangeRect.left + 0.5*thumbSize) - bodyRect.left;
-
-        tooltip.style.top = top + "px";
-        tooltip.style.left = (middle - 0.5 * tooltipRect.width) + "px";
-    }
-
-    window.addEventListener("load", function() {
-        const tooltips = document.querySelectorAll(".tooltip");
-        Array.prototype.forEach.call(tooltips, function(tooltip) {
-            const range = tooltip.previousElementSibling;
-            if (isRangeElement(range)) {
-                range.parentNode.addEventListener("mouseenter", function() {
-                    updateTooltipPosition(range, tooltip);
-                }, false);
-
-                range.addEventListener("input", function() {
-                    updateTooltipPosition(range, tooltip);
-                }, false);
-            }
-        });
-    });
-
-    const isIE11 = !!window.MSInputMethodContext && !!document.documentMode;
-
-    return Object.freeze({
-        /**
-         * Callback will be called every time the value changes.
-         * @param {string} rangeId
-         * @param {Object} observer Callback method
-         * @return {boolean} Whether or not the observer was added
-         */
-        addObserver: function(rangeId, observer) {
-            if (isIE11) { // bug in IE 11, input event is never fired
-                return addObserver(rangeId, observer, "change");
-            } else {
-                return addObserver(rangeId, observer, "input");
-            }
-        },
-
-        /**
-         * Callback will be called only when the value stops changing.
-         * @param {string} rangeId
-         * @param {Object} observer Callback method
-         * @return {boolean} Whether or not the observer was added
-         */
-        addLazyObserver: function(rangeId, observer) {
-            return addObserver(rangeId, observer, "change");
-        },
-
-        /**
-         * @param {string} rangeId
-         * @return {number}
-         */
-        getValue: function(rangeId) {
-            const elt = getRangeById(rangeId);
-            if (!elt) {
-                return null;
-            }
-            return +elt.value;
-        },
-
-        /**
-         * @param {string} rangeId
-         * @param {number} value
-         */
-        setValue: function(rangeId, value) {
-            const elt = getRangeById(rangeId);
-            if (elt) {
-                elt.value = value;
-            }
-        },
-    });
-})();
-
 /* exported Tabs */
 const Tabs = (function() {
     /**
@@ -1072,6 +834,244 @@ const Picker = (function() {
                 picker.inputs[i].checked = (picker.inputs[i].value === value);
             }
             updateVisibleValue(picker, false);
+        },
+    });
+})();
+
+/* exported Range */
+const Range = (function() {
+    /**
+     * @param {Object} elt Html node element
+     * @return {boolean}
+     */
+    function isRangeElement(elt) {
+        return elt.type && elt.type.toLowerCase() === "range";
+    }
+
+    /**
+     * @param {string} id
+     * @return {Object} Html node or null if not found
+     */
+    function getRangeById(id) {
+        const selector = "input[type=range][id=" + id + "]";
+        const elt = document.querySelector(selector);
+        if (!elt) {
+            console.error("Cannot find range '" + selector + "'.");
+        }
+        return elt;
+    }
+
+    /**
+     * @param {string} rangeId
+     * @param {Object} observer Callback method
+     * @param {string} eventName Event on which the callback is called
+     * @return {boolean} Whether or not the observer was added
+     */
+    function addObserver(rangeId, observer, eventName) {
+        const elt = getRangeById(rangeId);
+        if (elt) {
+            elt.addEventListener(eventName, function(event) {
+                event.stopPropagation();
+                observer(+elt.value);
+            }, false);
+            return true;
+        }
+
+        return false;
+    }
+
+    const thumbSize = 16;
+    /**
+     *
+     * @param {Object} range    Node element
+     * @param {Object} tooltip  Node element
+     * @return {void}
+     */
+    function updateTooltipPosition(range, tooltip) {
+        tooltip.textContent = range.value;
+
+        const bodyRect = document.body.getBoundingClientRect();
+        const rangeRect = range.getBoundingClientRect();
+        const tooltipRect = tooltip.getBoundingClientRect();
+
+        const percentage = (range.value - range.min) / (range.max - range.min);
+
+        const top = (rangeRect.top - tooltipRect.height - bodyRect.top) - 4;
+        const middle = percentage * (rangeRect.width - thumbSize) +
+            (rangeRect.left + 0.5*thumbSize) - bodyRect.left;
+
+        tooltip.style.top = top + "px";
+        tooltip.style.left = (middle - 0.5 * tooltipRect.width) + "px";
+    }
+
+    window.addEventListener("load", function() {
+        const tooltips = document.querySelectorAll(".tooltip");
+        Array.prototype.forEach.call(tooltips, function(tooltip) {
+            const range = tooltip.previousElementSibling;
+            if (isRangeElement(range)) {
+                range.parentNode.addEventListener("mouseenter", function() {
+                    updateTooltipPosition(range, tooltip);
+                }, false);
+
+                range.addEventListener("input", function() {
+                    updateTooltipPosition(range, tooltip);
+                }, false);
+            }
+        });
+    });
+
+    const isIE11 = !!window.MSInputMethodContext && !!document.documentMode;
+
+    return Object.freeze({
+        /**
+         * Callback will be called every time the value changes.
+         * @param {string} rangeId
+         * @param {Object} observer Callback method
+         * @return {boolean} Whether or not the observer was added
+         */
+        addObserver: function(rangeId, observer) {
+            if (isIE11) { // bug in IE 11, input event is never fired
+                return addObserver(rangeId, observer, "change");
+            } else {
+                return addObserver(rangeId, observer, "input");
+            }
+        },
+
+        /**
+         * Callback will be called only when the value stops changing.
+         * @param {string} rangeId
+         * @param {Object} observer Callback method
+         * @return {boolean} Whether or not the observer was added
+         */
+        addLazyObserver: function(rangeId, observer) {
+            return addObserver(rangeId, observer, "change");
+        },
+
+        /**
+         * @param {string} rangeId
+         * @return {number}
+         */
+        getValue: function(rangeId) {
+            const elt = getRangeById(rangeId);
+            if (!elt) {
+                return null;
+            }
+            return +elt.value;
+        },
+
+        /**
+         * @param {string} rangeId
+         * @param {number} value
+         */
+        setValue: function(rangeId, value) {
+            const elt = getRangeById(rangeId);
+            if (elt) {
+                elt.value = value;
+            }
+        },
+    });
+})();
+
+/* exported Checkbox */
+const Checkbox = (function() {
+    /**
+     * @param {string} id
+     * @return {Object} Html node or null if not found
+     */
+    function getCheckboxFromId(id) {
+        const selector = "input[type=checkbox][id=" + id + "]";
+        const elt = document.querySelector(selector);
+        if (!elt) {
+            console.error("Cannot find checkbox '" + selector + "'.");
+        }
+        return elt;
+    }
+
+    return Object.freeze({
+        /**
+         * @param {string} checkboxId
+         * @param {Object} observer Callback method
+         * @return {boolean} Whether or not the observer was added
+         */
+        addObserver: function(checkboxId, observer) {
+            const elt = getCheckboxFromId(checkboxId);
+            if (elt) {
+                elt.addEventListener("change", function(event) {
+                    event.stopPropagation();
+                    observer(event.target.checked);
+                }, false);
+                return true;
+            }
+
+            return false;
+        },
+
+        /**
+         * @param {string} checkboxId
+         * @param {boolean} value
+         * @return {void}
+         */
+        setChecked: function(checkboxId, value) {
+            const elt = getCheckboxFromId(checkboxId);
+            if (elt) {
+                elt.checked = value ? true : false;
+            }
+        },
+
+        /**
+         * @param {string} checkboxId
+         * @return {boolean}
+         */
+        isChecked: function(checkboxId) {
+            const elt = getCheckboxFromId(checkboxId);
+            return elt && elt.checked;
+        },
+    });
+})();
+
+/* exported Button */
+const Button = (function() {
+    /**
+     * @param {string} id
+     * @return {Object} Html node or null if not found
+     */
+    function getButtonById(id) {
+        const selector = "button[id=" + id + "]";
+        const elt = document.querySelector(selector);
+        if (!elt) {
+            console.error("Cannot find button '" + checkboxId + "'.");
+        }
+        return elt;
+    }
+
+    return Object.freeze({
+        /**
+         * @param {string} buttonId
+         * @param {Object} observer Callback function
+         * @return {boolean} Whether or not the observer was added
+         */
+        addObserver: function(buttonId, observer) {
+            const elt = getButtonById(buttonId);
+            if (elt) {
+                elt.addEventListener("click", function(event) {
+                    event.stopPropagation();
+                    observer();
+                }, false);
+                return true;
+            }
+
+            return false;
+        },
+
+        /**
+         * @param {string} buttonId
+         * @param {string} label
+         */
+        setLabel: function(buttonId, label) {
+            const elt = getButtonById(buttonId);
+            if (elt) {
+                elt.innerText = label;
+            }
         },
     });
 })();
