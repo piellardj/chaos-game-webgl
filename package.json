@@ -20,13 +20,13 @@
   "repository": "github:piellardj/chaos-game-webgl",
   "license": "ISC",
   "devDependencies": {
-    "fs-extra": "^7.0.1",
+    "fs-extra": "^8.0.1",
     "shx": "^0.3.2",
-    "ts-loader": "^5.3.3",
-    "tslint": "^5.16.0",
-    "typescript": "^3.4.4",
-    "webpack": "^4.30.0",
-    "webpack-cli": "^3.3.0",
+    "ts-loader": "^6.0.3",
+    "tslint": "^5.17.0",
+    "typescript": "^3.5.2",
+    "webpack": "^4.35.0",
+    "webpack-cli": "^3.3.4",
     "webpage-templates": "github:piellardj/webpage-templates"
   }
 }
