@@ -4,8 +4,7 @@
     "introduction": [
         "The Chaos Game is an iterative way of drawing fractals using a number of fixed invisible points called attractors and a single point that is repeatedly moved and drawn on the canvas. The initial position of the point is picked randomly on the canvas, and then the next position is computed as follow: a random attractor is chosen and the point is moved a fraction of the distance towards this attractor.",
         "You can discover lots of different fractals by slightly modifying the parameters: number of attractors, distance used to move the point and restriction on the choice of the attractor depending on previous choices. Moreover, the simulation can run in an additional mode where the distance slowly drifts, resulting in flower-like patterns.",
-        "You can also zoom in and explore the fractals with the mouse.",
-        "This project runs on CPU and is rendered using WebGL."
+        "You can also zoom in and explore the fractals with the mouse."
     ],
     "githubProjectName": "chaos-game-webgl",
     "additionalLinks": [],
