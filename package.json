@@ -12,9 +12,7 @@
     "lint": "tslint -c src/config/tslint.json -p src/config/tsconfig.json",
     "pre-commit": "npm run lint && npm run rebuild",
     "rebuild": "npm run clean && npm run build",
-    "webpack": "npm run webpack-dev && npm run webpack-prod",
-    "webpack-dev": "webpack --config src/config/webpack.config.js --mode=development --output docs/script/main.js",
-    "webpack-prod": "webpack --config src/config/webpack.config.js --mode=production --output docs/script/main.min.js"
+    "webpack": "webpack --config src/config/webpack.config.js --output docs/script/main.min.js"
   },
   "author": "“Jérémie PIELLARD <jeremie.piellard@gmail.com> (https://github.com/piellardj)",
   "repository": "github:piellardj/chaos-game-webgl",
