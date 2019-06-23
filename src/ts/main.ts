@@ -21,9 +21,7 @@ function main() {
     Parameters.presetFixed = 15;
     Parameters.presetMovement = 0;
 
-    let needToAdjustCanvasSize = true;
     let needToClearCanvas = true;
-    let needToDisplayPreview = false;
     let lockedCanvas = false;
     bindEvents();
 
@@ -37,6 +35,9 @@ function main() {
     setTotalPoints(0);
 
     function clearCanvas() {
+        GLCanvas.adjustSize();
+        Viewport.setFullCanvas(gl);
+
         if (Parameters.theme === Theme.LIGHT) {
             gl.clearColor(1, 1, 1, 1);
             gl.blendEquation(gl.FUNC_REVERSE_SUBTRACT);
@@ -52,29 +53,19 @@ function main() {
 
     let mode: ModeBase;
 
-    let isPreview = false;
     let firstDraw = true;
     function mainLoop() {
         if (!lockedCanvas) {
-            if (needToAdjustCanvasSize) {
-                GLCanvas.adjustSize();
-                Viewport.setFullCanvas(gl);
-                needToAdjustCanvasSize = false;
-                needToClearCanvas = true;
-            }
-
-            if (needToClearCanvas || isPreview) {
+            if (needToClearCanvas) {
                 clearCanvas();
                 mode = (Parameters.mode ===  Mode.FIXED) ? Modes.fixed : Modes.movement;
                 mode.reset();
-                isPreview = false;
             }
 
-            if (needToDisplayPreview || Canvas.isMouseDown()) {
+            if (Canvas.isMouseDown()) {
                 Modes.preview.drawStep(game);
                 setTotalPoints(Modes.preview.totalPointsDrawn);
-                needToDisplayPreview = false;
-                isPreview = true;
+                needToClearCanvas = true;
             } else {
                 if (mode.needsToKeepDrawing) {
                     mode.drawStep(game);
@@ -110,14 +101,13 @@ function main() {
 
     function bindEvents() {
         Parameters.clearObservers.push(() => needToClearCanvas = true);
-        Parameters.previewObservers.push(() => needToDisplayPreview = true);
-        Canvas.Observers.canvasResize.push(() => needToAdjustCanvasSize = true);
+        Canvas.Observers.canvasResize.push(() => needToClearCanvas = true);
 
         Parameters.downloadObservers.push((wantedSize: number) => {
             lockedCanvas = true;
             DownloadCanvas(game, wantedSize);
             lockedCanvas = false;
-            needToAdjustCanvasSize = true;
+            needToClearCanvas = true;
         });
     }
 }

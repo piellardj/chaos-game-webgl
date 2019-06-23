@@ -55,12 +55,10 @@ function callObservers(observersList: any[]): void {
 const observers: {
     clear: GenericObserver[],
     download: DownloadObserver[],
-    preview: GenericObserver[],
     resetView: GenericObserver[],
 } = {
     clear: [],
     download: [],
-    preview: [],
     resetView: [],
 };
 
@@ -73,8 +71,6 @@ FileControl.addDownloadObserver(controlId.DOWNLOAD, () => {
 
 Button.addObserver(controlId.RESET, () => callObservers(observers.clear));
 Canvas.Observers.mouseDrag.push(() => callObservers(observers.clear));
-
-Canvas.Observers.mouseDrag.push(() => callObservers(observers.preview));
 
 let nbPointsNeeded: number = 0;
 function recomputeNbPointsNeeded() {
@@ -198,10 +194,6 @@ class Parameters {
 
     public static get clearObservers(): GenericObserver[] {
         return observers.clear;
-    }
-
-    public static get previewObservers(): GenericObserver[] {
-        return observers.preview;
     }
 
     public static get resetViewObservers(): GenericObserver[] {
@@ -337,7 +329,6 @@ let distanceFrom: number = Range.getValue(controlId.DISTANCE_FROM);
 Range.addObserver(controlId.DISTANCE_FROM, (df: number) => {
     distanceFrom = df;
     clearPresetMovement();
-    callObservers(observers.preview);
     restartRendering();
 });
 
@@ -345,7 +336,6 @@ let distanceTo: number = Range.getValue(controlId.DISTANCE_TO);
 Range.addObserver(controlId.DISTANCE_TO, (dt: number) => {
     distanceTo = dt;
     clearPresetMovement();
-    callObservers(observers.preview);
     restartRendering();
 });
 
