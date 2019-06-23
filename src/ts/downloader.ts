@@ -3,6 +3,7 @@ import { gl } from "./gl-utils/gl-canvas";
 import Viewport from "./gl-utils/viewport";
 
 import Game from "./chaos-game";
+import * as Modes from "./mode/modes";
 import { Mode, Parameters } from "./parameters";
 
 declare const Canvas: any;
@@ -44,33 +45,11 @@ function downloadCanvas(game: Game, size: number): void {
     isolateCanvas();
 
     gl.clear(gl.COLOR_BUFFER_BIT);
-    let nbPointsDrawn = 0;
 
-    if (Parameters.mode === Mode.FIXED) {
-        const pointsPerStep = Math.pow(2, 19); // arbitrary, points per step don"t matter in fixed mode
-        const distance = Parameters.distance;
-
-        while (nbPointsDrawn < nbPointsNeeded) {
-            nbPointsDrawn += pointsPerStep;
-            game.draw(pointsPerStep, distance, Parameters.quality);
-            // Canvas.setLoaderText(Math.floor(100 * nbPointsDrawn / nbPointsNeeded) + " %");
-        }
-    } else /* if (Parameters.mode === Mode.MOVEMENT) */ {
-        const pointsAtOnce = Math.pow(2, 19);
-        let distance = Parameters.distanceFrom;
-
-        while (distance < Parameters.distanceTo) {
-            const nbPointsNeededPerStep = nbPointsNeeded / 1000;
-            let nbPointsThisStep = 0;
-            while (nbPointsThisStep < nbPointsNeededPerStep) {
-                const nbPoints = Math.min(pointsAtOnce, nbPointsNeededPerStep - nbPointsThisStep);
-                game.draw(nbPoints, distance, Parameters.quality);
-                nbPointsThisStep += nbPoints;
-            }
-
-            distance += 0.002;
-            // Canvas.setLoaderText(Math.floor(100 * nbPointsDrawn / nbPointsNeeded) + " %");
-        }
+    const mode = (Parameters.mode === Mode.FIXED) ? Modes.fixed : Modes.movement;
+    mode.reset();
+    while (mode.needsToKeepDrawing) {
+        mode.drawStep(game);
     }
 
     const downloadedName = "chaos-game.png";
