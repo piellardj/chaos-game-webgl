@@ -262,6 +262,7 @@ var ChaosGame = (function (_super) {
         }
         return result;
     };
+    ChaosGame.MAX_POINTS_PER_STEP = Math.pow(2, 18);
     return ChaosGame;
 }(gl_resource_1.default));
 exports.default = ChaosGame;
@@ -339,15 +340,11 @@ var GLCanvas = __importStar(__webpack_require__(/*! ./gl-utils/gl-canvas */ "./s
 var gl_canvas_1 = __webpack_require__(/*! ./gl-utils/gl-canvas */ "./src/ts/gl-utils/gl-canvas.ts");
 var viewport_1 = __importDefault(__webpack_require__(/*! ./gl-utils/viewport */ "./src/ts/gl-utils/viewport.ts"));
 var parameters_1 = __webpack_require__(/*! ./parameters */ "./src/ts/parameters.ts");
-function downloadCanvas(game, size, nbPointsForCurrentSize) {
+function downloadCanvas(game, size) {
     var canvas = Canvas.getCanvas();
-    var canvasHeight = Canvas.getSize()[1];
-    function adjustNbPointsForWantedSize(nbPoints) {
-        return nbPoints * Math.pow(size / canvasHeight, 2);
-    }
-    var nbPointsNeeded = adjustNbPointsForWantedSize(nbPointsForCurrentSize);
+    var nbPointsNeeded = parameters_1.Parameters.computeNbPointsNeeded([size, size]);
     if (nbPointsNeeded > 50000000) {
-        var message = "Rendering your image will take a while " +
+        var message = "Rendering your image might take a while " +
             "because it requires to draw " + nbPointsNeeded.toLocaleString() + " points. " +
             "Do you want to proceed?";
         if (!confirm(message)) {
@@ -375,7 +372,7 @@ function downloadCanvas(game, size, nbPointsForCurrentSize) {
     gl_canvas_1.gl.clear(gl_canvas_1.gl.COLOR_BUFFER_BIT);
     var nbPointsDrawn = 0;
     if (parameters_1.Parameters.mode === parameters_1.Mode.FIXED) {
-        var pointsPerStep = 524288;
+        var pointsPerStep = Math.pow(2, 19);
         var distance = parameters_1.Parameters.distance;
         while (nbPointsDrawn < nbPointsNeeded) {
             nbPointsDrawn += pointsPerStep;
@@ -383,15 +380,17 @@ function downloadCanvas(game, size, nbPointsForCurrentSize) {
         }
     }
     else {
-        var pointsPerStep = adjustNbPointsForWantedSize(Math.pow(2, parameters_1.Parameters.speed - 1));
+        var pointsAtOnce = Math.pow(2, 19);
         var distance = parameters_1.Parameters.distanceFrom;
-        while (nbPointsDrawn < nbPointsNeeded) {
-            distance += 0.002;
-            if (distance > parameters_1.Parameters.distanceTo) {
-                distance = parameters_1.Parameters.distanceFrom;
+        while (distance < parameters_1.Parameters.distanceTo) {
+            var nbPointsNeededPerStep = nbPointsNeeded / 1000;
+            var nbPointsThisStep = 0;
+            while (nbPointsThisStep < nbPointsNeededPerStep) {
+                var nbPoints = Math.min(pointsAtOnce, nbPointsNeededPerStep - nbPointsThisStep);
+                game.draw(nbPoints, distance, parameters_1.Parameters.quality);
+                nbPointsThisStep += nbPoints;
             }
-            nbPointsDrawn += pointsPerStep;
-            game.draw(pointsPerStep, distance, parameters_1.Parameters.quality);
+            distance += 0.002;
         }
     }
     var downloadedName = "chaos-game.png";
@@ -1046,8 +1045,6 @@ function main() {
     initGL();
     Canvas.showLoader(true);
     parameters_1.Parameters.quality = 0.6;
-    parameters_1.Parameters.speed = 17;
-    parameters_1.Parameters.autorun = true;
     parameters_1.Parameters.colors = false;
     parameters_1.Parameters.presetFixed = 15;
     parameters_1.Parameters.presetMovement = 0;
@@ -1087,32 +1084,41 @@ function main() {
                 needToAdjustCanvasSize = false;
                 needToClearCanvas = true;
             }
-            needToClearCanvas = needToClearCanvas || (isPreview && parameters_1.Parameters.autorun);
-            if (needToClearCanvas) {
+            if (needToClearCanvas || isPreview) {
                 clearCanvas();
                 isPreview = false;
+                if (parameters_1.Parameters.mode === parameters_1.Mode.MOVEMENT) {
+                    distance = parameters_1.Parameters.distanceFrom;
+                }
             }
-            needToDisplayPreview = needToDisplayPreview || Canvas.isMouseDown();
-            if (needToDisplayPreview) {
+            if (needToDisplayPreview || Canvas.isMouseDown()) {
                 var nbPoints = Math.pow(2, 17);
                 game.draw(nbPoints, distance, 0);
                 setTotalPoints(nbPoints);
                 needToDisplayPreview = false;
                 isPreview = true;
             }
-            else if (parameters_1.Parameters.autorun) {
+            else {
                 if (parameters_1.Parameters.mode === parameters_1.Mode.MOVEMENT) {
-                    distance += 0.002;
-                    if (distance > parameters_1.Parameters.distanceTo) {
-                        distance = parameters_1.Parameters.distanceFrom;
+                    if (distance < parameters_1.Parameters.distanceTo) {
+                        var nbPointsNeededPerStep = parameters_1.Parameters.nbPointsNeeded / 1000;
+                        var nbPointsThisStep = 0;
+                        while (nbPointsThisStep < nbPointsNeededPerStep) {
+                            var nbPointsLeftToDraw = nbPointsNeededPerStep - nbPointsThisStep;
+                            var nbPoints = Math.min(chaos_game_1.default.MAX_POINTS_PER_STEP, nbPointsLeftToDraw);
+                            game.draw(nbPoints, distance, parameters_1.Parameters.quality);
+                            setTotalPoints(totalPoints + nbPoints);
+                            nbPointsThisStep += nbPoints;
+                        }
+                        distance += 0.002;
                     }
                 }
-                else {
+                else if (totalPoints < parameters_1.Parameters.nbPointsNeeded) {
                     distance = parameters_1.Parameters.distance;
+                    var nbPoints = Math.min(chaos_game_1.default.MAX_POINTS_PER_STEP, parameters_1.Parameters.nbPointsNeeded - totalPoints);
+                    setTotalPoints(totalPoints + nbPoints);
+                    game.draw(nbPoints, distance, parameters_1.Parameters.quality);
                 }
-                var nbPoints = Math.pow(2, parameters_1.Parameters.speed - 1);
-                setTotalPoints(totalPoints + nbPoints);
-                game.draw(nbPoints, distance, parameters_1.Parameters.quality);
                 if (firstDraw) {
                     firstDraw = false;
                     Canvas.showLoader(false);
@@ -1151,7 +1157,7 @@ function main() {
         parameters_1.Parameters.modeChangeObservers.push(initDistance);
         parameters_1.Parameters.downloadObservers.push(function (wantedSize) {
             lockedCanvas = true;
-            downloader_1.default(game, wantedSize, totalPoints);
+            downloader_1.default(game, wantedSize);
             lockedCanvas = false;
             needToAdjustCanvasSize = true;
         });
@@ -1191,12 +1197,6 @@ var Theme;
 })(Theme || (Theme = {}));
 exports.Theme = Theme;
 var controlId = {
-    AUTORUN: "autorun-checkbox-id",
-    RESET: "reset-button-id",
-    SPEED: "speed-range-id",
-    QUALITY: "quality-range-id",
-    THEME: "theme",
-    COLORS: "colors-checkbox-id",
     MODE: "mode",
     PRESETS_FIXED: "presets-fixed-picker-id",
     PRESETS_MOVEMENT: "presets-movement-picker-id",
@@ -1206,6 +1206,11 @@ var controlId = {
     DISTANCE_TO: "distance-to-range-id",
     FORBID_REPEAT: "forbid-repeat-checkbox-id",
     RESTRICTIONS: "restrictions-picker-id",
+    INTENSITY: "intensity-range-id",
+    QUALITY: "quality-range-id",
+    THEME: "theme",
+    COLORS: "colors-checkbox-id",
+    RESET: "reset-button-id",
     RESULT_SIZE: "result-dimensions",
     DOWNLOAD: "result-download-id",
 };
@@ -1231,9 +1236,22 @@ FileControl.addDownloadObserver(controlId.DOWNLOAD, function () {
 Button.addObserver(controlId.RESET, function () { return callObservers(observers.clear); });
 Canvas.Observers.mouseDrag.push(function () { return callObservers(observers.clear); });
 Canvas.Observers.mouseDrag.push(function () { return callObservers(observers.preview); });
+var nbPointsNeeded = 0;
+function recomputeNbPointsNeeded() {
+    var newValue = Parameters.computeNbPointsNeeded(Canvas.getSize());
+    var needToRedraw = (mode === Mode.MOVEMENT) || (newValue < nbPointsNeeded);
+    nbPointsNeeded = newValue;
+    if (needToRedraw) {
+        restartRendering();
+    }
+}
 var Parameters = (function () {
     function Parameters() {
     }
+    Parameters.computeNbPointsNeeded = function (canvasSize) {
+        var exactValue = 10000 * intensity * (quality + 0.1) * canvasSize[0] * canvasSize[1] / (scale * scale);
+        return Math.ceil(exactValue);
+    };
     Object.defineProperty(Parameters, "scale", {
         get: function () {
             return scale;
@@ -1245,24 +1263,17 @@ var Parameters = (function () {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(Parameters, "autorun", {
+    Object.defineProperty(Parameters, "nbPointsNeeded", {
         get: function () {
-            return autorun;
-        },
-        set: function (a) {
-            autorun = a;
-            Checkbox.setChecked(controlId.AUTORUN, a);
+            return nbPointsNeeded;
         },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(Parameters, "speed", {
-        get: function () {
-            return speed;
-        },
-        set: function (s) {
-            speed = s;
-            Range.setValue(controlId.SPEED, speed);
+    Object.defineProperty(Parameters, "intensity", {
+        set: function (i) {
+            Range.setValue(controlId.INTENSITY, i);
+            intensity = Range.getValue(controlId.INTENSITY);
         },
         enumerable: true,
         configurable: true
@@ -1419,7 +1430,6 @@ var Parameters = (function () {
 exports.Parameters = Parameters;
 function restartRendering() {
     callObservers(observers.clear);
-    Parameters.autorun = true;
 }
 var scale = 1.0;
 var MIN_SCALE = 0.05;
@@ -1428,20 +1438,19 @@ Canvas.Observers.mouseWheel.push(function (delta, zoomCenter) {
     var newScale = clamp(scale * (1 + 0.2 * delta), MIN_SCALE, MAX_SCALE);
     if (newScale !== scale) {
         scale = newScale;
+        recomputeNbPointsNeeded();
         restartRendering();
     }
 });
-var autorun = Checkbox.isChecked(controlId.AUTORUN);
-Checkbox.addObserver(controlId.AUTORUN, function (checked) {
-    autorun = checked;
-});
-var speed = Range.getValue(controlId.SPEED);
-Range.addObserver(controlId.SPEED, function (s) {
-    speed = s;
+var intensity = Range.getValue(controlId.INTENSITY);
+Range.addObserver(controlId.INTENSITY, function (i) {
+    intensity = i;
+    recomputeNbPointsNeeded();
 });
 var quality = Range.getValue(controlId.QUALITY);
 Range.addObserver(controlId.QUALITY, function (q) {
     quality = q;
+    recomputeNbPointsNeeded();
     restartRendering();
 });
 var theme;
@@ -1586,6 +1595,7 @@ Picker.addObserver(controlId.RESTRICTIONS, function (v) {
     clearPresetMovement();
     restartRendering();
 });
+recomputeNbPointsNeeded();
 
 
 /***/ }),

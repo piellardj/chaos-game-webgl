@@ -22,13 +22,6 @@ enum Theme {
 
 /* === IDs ============================================================ */
 const controlId = {
-    AUTORUN: "autorun-checkbox-id",
-    RESET: "reset-button-id",
-    SPEED: "speed-range-id",
-    QUALITY: "quality-range-id",
-    THEME: "theme",
-    COLORS: "colors-checkbox-id",
-
     MODE: "mode",
     PRESETS_FIXED: "presets-fixed-picker-id",
     PRESETS_MOVEMENT: "presets-movement-picker-id",
@@ -38,6 +31,12 @@ const controlId = {
     DISTANCE_TO: "distance-to-range-id",
     FORBID_REPEAT: "forbid-repeat-checkbox-id",
     RESTRICTIONS: "restrictions-picker-id",
+
+    INTENSITY: "intensity-range-id",
+    QUALITY: "quality-range-id",
+    THEME: "theme",
+    COLORS: "colors-checkbox-id",
+    RESET: "reset-button-id",
 
     RESULT_SIZE: "result-dimensions",
     DOWNLOAD: "result-download-id",
@@ -77,8 +76,24 @@ Canvas.Observers.mouseDrag.push(() => callObservers(observers.clear));
 
 Canvas.Observers.mouseDrag.push(() => callObservers(observers.preview));
 
+let nbPointsNeeded: number = 0;
+function recomputeNbPointsNeeded() {
+    const newValue = Parameters.computeNbPointsNeeded(Canvas.getSize());
+    const needToRedraw = (mode === Mode.MOVEMENT) || (newValue < nbPointsNeeded);
+    nbPointsNeeded = newValue;
+
+    if (needToRedraw) {
+        restartRendering();
+    }
+}
+
 /* === INTERFACE ====================================================== */
 class Parameters {
+    public static computeNbPointsNeeded(canvasSize: number[]): number {
+        const exactValue = 10000 * intensity * (quality + 0.1) * canvasSize[0] * canvasSize[1] / (scale * scale);
+        return Math.ceil(exactValue);
+    }
+
     public static get scale(): number {
         return scale;
     }
@@ -87,20 +102,12 @@ class Parameters {
         callObservers(observers.clear);
     }
 
-    public static get autorun(): boolean {
-        return autorun;
+    public static get nbPointsNeeded(): number {
+        return nbPointsNeeded;
     }
-    public static set autorun(a: boolean) {
-        autorun = a;
-        Checkbox.setChecked(controlId.AUTORUN, a);
-    }
-
-    public static get speed(): number {
-        return speed;
-    }
-    public static set speed(s: number) {
-        speed = s;
-        Range.setValue(controlId.SPEED, speed);
+    public static set intensity(i: number) {
+        Range.setValue(controlId.INTENSITY, i);
+        intensity = Range.getValue(controlId.INTENSITY);
     }
 
     public static get quality(): number {
@@ -208,34 +215,31 @@ class Parameters {
 /* --- RENDERING ------------------------------------------------------ */
 function restartRendering() {
     callObservers(observers.clear);
-    Parameters.autorun = true;
 }
 
 let scale = 1.0;
-const MIN_SCALE = 0.05;
+const MIN_SCALE = 0.05; // should be > 0
 const MAX_SCALE = 4.0;
 Canvas.Observers.mouseWheel.push((delta: number, zoomCenter: number[]) => {
     const newScale = clamp(scale * (1 + 0.2 * delta), MIN_SCALE, MAX_SCALE);
 
     if (newScale !== scale) {
         scale = newScale;
+        recomputeNbPointsNeeded();
         restartRendering();
     }
 });
 
-let autorun: boolean = Checkbox.isChecked(controlId.AUTORUN);
-Checkbox.addObserver(controlId.AUTORUN, (checked: boolean) => {
-    autorun = checked;
-});
-
-let speed: number = Range.getValue(controlId.SPEED);
-Range.addObserver(controlId.SPEED, (s: number) => {
-    speed = s;
+let intensity: number = Range.getValue(controlId.INTENSITY);
+Range.addObserver(controlId.INTENSITY, (i: number) => {
+    intensity = i;
+    recomputeNbPointsNeeded();
 });
 
 let quality: number = Range.getValue(controlId.QUALITY);
 Range.addObserver(controlId.QUALITY, (q: number) => {
     quality = q;
+    recomputeNbPointsNeeded();
     restartRendering();
 });
 
@@ -393,6 +397,8 @@ Picker.addObserver(controlId.RESTRICTIONS, (v: string) => {
     clearPresetMovement();
     restartRendering();
 });
+
+recomputeNbPointsNeeded();
 
 export {
     Mode,

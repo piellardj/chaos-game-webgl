@@ -6,7 +6,6 @@ import Game from "./chaos-game";
 import DownloadCanvas from "./downloader";
 import { Mode, Parameters, Theme } from "./parameters";
 
-declare const Button: any;
 declare const Canvas: any;
 
 function main() {
@@ -15,8 +14,6 @@ function main() {
     Canvas.showLoader(true);
 
     Parameters.quality = 0.6;
-    Parameters.speed = 17;
-    Parameters.autorun = true;
     Parameters.colors = false;
     Parameters.presetFixed = 15;
     Parameters.presetMovement = 0;
@@ -63,33 +60,42 @@ function main() {
                 needToClearCanvas = true;
             }
 
-            needToClearCanvas = needToClearCanvas || (isPreview && Parameters.autorun);
-            if (needToClearCanvas) {
+            if (needToClearCanvas || isPreview) {
                 clearCanvas();
                 isPreview = false;
+                if (Parameters.mode === Mode.MOVEMENT) {
+                    distance = Parameters.distanceFrom;
+                }
             }
 
-            needToDisplayPreview = needToDisplayPreview || Canvas.isMouseDown();
-            if (needToDisplayPreview) {
+            if (needToDisplayPreview || Canvas.isMouseDown()) {
                 const nbPoints = Math.pow(2, 17);
                 game.draw(nbPoints, distance, 0);
                 setTotalPoints(nbPoints);
                 needToDisplayPreview = false;
                 isPreview = true;
-            } else if (Parameters.autorun) {
+            } else {
                 if (Parameters.mode === Mode.MOVEMENT) {
-                    distance += 0.002;
+                    if (distance < Parameters.distanceTo) {
+                        const nbPointsNeededPerStep = Parameters.nbPointsNeeded / 1000;
+                        let nbPointsThisStep = 0;
+                        while (nbPointsThisStep < nbPointsNeededPerStep) {
+                            const nbPointsLeftToDraw =  nbPointsNeededPerStep - nbPointsThisStep;
+                            const nbPoints = Math.min(Game.MAX_POINTS_PER_STEP, nbPointsLeftToDraw);
+                            game.draw(nbPoints, distance, Parameters.quality);
+                            setTotalPoints(totalPoints + nbPoints);
+                            nbPointsThisStep += nbPoints;
+                        }
 
-                    if (distance > Parameters.distanceTo) {
-                        distance = Parameters.distanceFrom;
+                        distance += 0.002;
                     }
-                } else {
+                } else if (totalPoints < Parameters.nbPointsNeeded) {
                     distance = Parameters.distance;
-                }
 
-                const nbPoints = Math.pow(2, Parameters.speed - 1);
-                setTotalPoints(totalPoints + nbPoints);
-                game.draw(nbPoints, distance, Parameters.quality);
+                    const nbPoints = Math.min(Game.MAX_POINTS_PER_STEP, Parameters.nbPointsNeeded - totalPoints);
+                    setTotalPoints(totalPoints + nbPoints);
+                    game.draw(nbPoints, distance, Parameters.quality);
+                }
 
                 if (firstDraw) {
                     firstDraw = false;
@@ -136,7 +142,7 @@ function main() {
 
         Parameters.downloadObservers.push((wantedSize: number) => {
             lockedCanvas = true;
-            DownloadCanvas(game, wantedSize, totalPoints);
+            DownloadCanvas(game, wantedSize);
             lockedCanvas = false;
             needToAdjustCanvasSize = true;
         });

@@ -7,21 +7,12 @@ import { Mode, Parameters } from "./parameters";
 
 declare const Canvas: any;
 
-function downloadCanvas(game: Game, size: number, nbPointsForCurrentSize: number): void {
+function downloadCanvas(game: Game, size: number): void {
     const canvas = Canvas.getCanvas() as HTMLCanvasElement;
-    const canvasHeight = Canvas.getSize()[1];
 
-    /**
-     * The downloaded image is usually bigger than the canvas.
-     * To replicate a 512x512 canvas on a 1024x1024 image, we need to draw 4 times more points.
-     */
-    function adjustNbPointsForWantedSize(nbPoints: number): number {
-        return nbPoints * Math.pow(size / canvasHeight, 2);
-    }
-
-    const nbPointsNeeded = adjustNbPointsForWantedSize(nbPointsForCurrentSize);
+    const nbPointsNeeded = Parameters.computeNbPointsNeeded([size, size]);
     if (nbPointsNeeded > 50000000) {
-        const message = "Rendering your image will take a while " +
+        const message = "Rendering your image might take a while " +
             "because it requires to draw " + nbPointsNeeded.toLocaleString() + " points. " +
             "Do you want to proceed?";
         if (!confirm(message)) {
@@ -56,7 +47,7 @@ function downloadCanvas(game: Game, size: number, nbPointsForCurrentSize: number
     let nbPointsDrawn = 0;
 
     if (Parameters.mode === Mode.FIXED) {
-        const pointsPerStep = 524288; // arbitrary, points per step don"t matter in fixed mode
+        const pointsPerStep = Math.pow(2, 19); // arbitrary, points per step don"t matter in fixed mode
         const distance = Parameters.distance;
 
         while (nbPointsDrawn < nbPointsNeeded) {
@@ -64,18 +55,20 @@ function downloadCanvas(game: Game, size: number, nbPointsForCurrentSize: number
             game.draw(pointsPerStep, distance, Parameters.quality);
             // Canvas.setLoaderText(Math.floor(100 * nbPointsDrawn / nbPointsNeeded) + " %");
         }
-    } else {
-        const pointsPerStep = adjustNbPointsForWantedSize(Math.pow(2, Parameters.speed - 1));
+    } else /* if (Parameters.mode === Mode.MOVEMENT) */ {
+        const pointsAtOnce = Math.pow(2, 19);
         let distance = Parameters.distanceFrom;
 
-        while (nbPointsDrawn < nbPointsNeeded) {
-            distance += 0.002;
-            if (distance > Parameters.distanceTo) {
-                distance = Parameters.distanceFrom;
+        while (distance < Parameters.distanceTo) {
+            const nbPointsNeededPerStep = nbPointsNeeded / 1000;
+            let nbPointsThisStep = 0;
+            while (nbPointsThisStep < nbPointsNeededPerStep) {
+                const nbPoints = Math.min(pointsAtOnce, nbPointsNeededPerStep - nbPointsThisStep);
+                game.draw(nbPoints, distance, Parameters.quality);
+                nbPointsThisStep += nbPoints;
             }
 
-            nbPointsDrawn += pointsPerStep;
-            game.draw(pointsPerStep, distance, Parameters.quality);
+            distance += 0.002;
             // Canvas.setLoaderText(Math.floor(100 * nbPointsDrawn / nbPointsNeeded) + " %");
         }
     }

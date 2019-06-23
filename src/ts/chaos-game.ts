@@ -23,6 +23,7 @@ interface IPointsSets {
 }
 
 class ChaosGame extends GLResource {
+    public static MAX_POINTS_PER_STEP = Math.pow(2, 18);
     private _shader: Shader;
     private _pointsVBO: VBO;
 
