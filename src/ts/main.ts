@@ -101,7 +101,6 @@ function main() {
 
     function bindEvents() {
         Parameters.clearObservers.push(() => needToClearCanvas = true);
-        Canvas.Observers.canvasResize.push(() => needToClearCanvas = true);
 
         Parameters.downloadObservers.push((wantedSize: number) => {
             lockedCanvas = true;

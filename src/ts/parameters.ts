@@ -388,6 +388,10 @@ Picker.addObserver(controlId.RESTRICTIONS, (v: string) => {
     restartRendering();
 });
 
+Canvas.Observers.canvasResize.push(() => {
+    recomputeNbPointsNeeded();
+    restartRendering();
+});
 recomputeNbPointsNeeded();
 
 export {

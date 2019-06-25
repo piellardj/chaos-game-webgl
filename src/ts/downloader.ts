@@ -21,6 +21,13 @@ function downloadCanvas(game: Game, size: number): void {
         }
     }
 
+    function manuallyTriggerCanvasResizeEvent() {
+        const canvasSize = Canvas.getSize();
+        for (let func of Canvas.Observers.canvasResize) {
+            func(canvasSize[0], canvasSize[1]);
+        }
+    }
+
     function isolateCanvas() {
         Canvas.showLoader(true);
 
@@ -30,6 +37,7 @@ function downloadCanvas(game: Game, size: number): void {
         canvas.width = size;
         canvas.height = size;
 
+        manuallyTriggerCanvasResizeEvent();
         GLCanvas.adjustSize();
         Viewport.setFullCanvas(gl);
     }
@@ -40,6 +48,7 @@ function downloadCanvas(game: Game, size: number): void {
         canvas.style.height = "";
         Canvas.showLoader(false);
         Canvas.setLoaderText("");
+        manuallyTriggerCanvasResizeEvent();
     }
 
     isolateCanvas();
