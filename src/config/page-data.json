@@ -111,26 +111,30 @@
                         },
                         {
                             "value": "15",
-                            "label": "Gecko"
+                            "label": "Cabbage"
                         },
                         {
                             "value": "16",
-                            "label": "Hubs"
+                            "label": "Gecko"
                         },
                         {
                             "value": "17",
-                            "label": "Sierpinski carpet"
+                            "label": "Hubs"
                         },
                         {
                             "value": "18",
-                            "label": "Forest"
+                            "label": "Sierpinski carpet"
                         },
                         {
                             "value": "19",
-                            "label": "Triangles"
+                            "label": "Forest"
                         },
                         {
                             "value": "20",
+                            "label": "Triangles"
+                        },
+                        {
+                            "value": "21",
                             "label": "Spirals"
                         }
                     ]
