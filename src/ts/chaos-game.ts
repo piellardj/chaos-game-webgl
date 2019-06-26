@@ -78,26 +78,29 @@ class ChaosGame extends GLResource {
         }
     }
 
+    public get isReadyToDraw(): boolean {
+        return this._shader != null;
+    }
+
     public draw(nbPoints: number, distance: number, quality: number): void {
-        const shader = this._shader;
-        if (shader) {
+        if (this.isReadyToDraw) {
             const pointsSets = this.computeXPoints(nbPoints, distance);
             this._pointsVBO.setData(pointsSets.data);
 
             /* tslint:disable:no-string-literal */
-            shader.a["aCoords"].VBO = this._pointsVBO;
+            this._shader.a["aCoords"].VBO = this._pointsVBO;
 
-            shader.use();
-            shader.bindAttributes();
+            this._shader.use();
+            this._shader.bindAttributes();
 
             const strength = 1 / (1 + 254 * quality);
             for (const pointsSet of pointsSets.sets) {
-                shader.u["uColor"].value = [
+                this._shader.u["uColor"].value = [
                     pointsSet.color[0] * strength,
                     pointsSet.color[1] * strength,
                     pointsSet.color[2] * strength,
                     1];
-                shader.bindUniforms();
+                this._shader.bindUniforms();
                 gl.drawArrays(gl.POINTS, pointsSet.from, pointsSet.size);
             }
             /* tslint:enable:no-string-literal */

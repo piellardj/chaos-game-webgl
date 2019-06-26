@@ -66,7 +66,7 @@ function main() {
                 Modes.preview.drawStep(game);
                 setTotalPoints(Modes.preview.totalPointsDrawn);
                 needToClearCanvas = true;
-            } else {
+            } else if (game.isReadyToDraw) {
                 if (mode.needsToKeepDrawing) {
                     mode.drawStep(game);
                     setTotalPoints(mode.totalPointsDrawn);
