@@ -23,7 +23,7 @@ function downloadCanvas(game: Game, size: number): void {
 
     function manuallyTriggerCanvasResizeEvent() {
         const canvasSize = Canvas.getSize();
-        for (let func of Canvas.Observers.canvasResize) {
+        for (const func of Canvas.Observers.canvasResize) {
             func(canvasSize[0], canvasSize[1]);
         }
     }
