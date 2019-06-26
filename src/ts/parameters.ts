@@ -45,6 +45,7 @@ const controlId = {
 /* === OBSERVERS ====================================================== */
 type DownloadObserver = (size: number) => void;
 type GenericObserver = () => void;
+type ModeChangeObserver = (newMode: Mode) => void;
 
 function callObservers(observersList: any[]): void {
     for (const observer of observersList) {
@@ -55,12 +56,19 @@ function callObservers(observersList: any[]): void {
 const observers: {
     clear: GenericObserver[],
     download: DownloadObserver[],
+    modeChange: ModeChangeObserver[],
     resetView: GenericObserver[],
 } = {
     clear: [],
     download: [],
+    modeChange: [],
     resetView: [],
 };
+
+enum Mode {
+    FIXED = "fixed",
+    MOVEMENT = "movement",
+}
 
 FileControl.addDownloadObserver(controlId.DOWNLOAD, () => {
     const size = +Tabs.getValues(controlId.RESULT_SIZE)[0];
@@ -86,7 +94,7 @@ function recomputeNbPointsNeeded() {
 /* === INTERFACE ====================================================== */
 class Parameters {
     public static computeNbPointsNeeded(canvasSize: number[]): number {
-        const exactValue = 10000 * intensity * (quality + 0.1) * canvasSize[0] * canvasSize[1] / (scale * scale);
+        const exactValue = 2000 * intensity * (quality + 0.1) * canvasSize[0] * canvasSize[1] / (scale * scale);
         return Math.ceil(exactValue);
     }
 
@@ -104,6 +112,7 @@ class Parameters {
     public static set intensity(i: number) {
         Range.setValue(controlId.INTENSITY, i);
         intensity = Range.getValue(controlId.INTENSITY);
+        recomputeNbPointsNeeded();
     }
 
     public static get quality(): number {
@@ -130,7 +139,7 @@ class Parameters {
         return mode;
     }
     public static get modeChangeObservers(): ModeChangeObserver[] {
-        return modeChangeObservers;
+        return observers.modeChange;
     }
 
     public static set presetFixed(p: number) {
@@ -266,6 +275,7 @@ function applyPresetFixed(newPresetId: number) {
         Parameters.distance = preset.distance;
         Parameters.restriction = preset.restriction;
         Parameters.scale = preset.scale;
+        Parameters.intensity = preset.intensity;
         restartRendering();
         callObservers(observers.resetView);
     }
@@ -296,6 +306,7 @@ function applyPresetMovement(newPresetId: number) {
         Parameters.distanceTo = preset.distanceTo;
         Parameters.restriction = preset.restriction;
         Parameters.scale = preset.scale;
+        Parameters.intensity = preset.intensity;
         restartRendering();
         callObservers(observers.resetView);
     }
@@ -339,13 +350,6 @@ Range.addObserver(controlId.DISTANCE_TO, (dt: number) => {
     restartRendering();
 });
 
-enum Mode {
-    FIXED = "fixed",
-    MOVEMENT = "movement",
-}
-type ModeChangeObserver = (newMode: Mode) => void;
-const modeChangeObservers: ModeChangeObserver[] = [];
-
 let mode: Mode;
 function applyMode(newMode: Mode): void {
     if (newMode !== mode) {
@@ -371,7 +375,7 @@ function applyMode(newMode: Mode): void {
         Controls.setVisibility(controlId.DISTANCE_FROM, !isFixed);
         Controls.setVisibility(controlId.DISTANCE_TO, !isFixed);
 
-        for (const observer of modeChangeObservers) {
+        for (const observer of observers.modeChange) {
             observer(newMode);
         }
         restartRendering();
