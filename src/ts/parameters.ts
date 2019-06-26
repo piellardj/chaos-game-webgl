@@ -94,7 +94,9 @@ function recomputeNbPointsNeeded() {
 /* === INTERFACE ====================================================== */
 class Parameters {
     public static computeNbPointsNeeded(canvasSize: number[]): number {
-        const exactValue = 2000 * intensity * (quality + 0.1) * canvasSize[0] * canvasSize[1] / (scale * scale);
+        const minSide = Math.min(canvasSize[0], canvasSize[1]);
+        const nbUsefulPixels = minSide * minSide;
+        const exactValue = 2000 * intensity * (quality + 0.1) * nbUsefulPixels / (scale * scale);
         return Math.ceil(exactValue);
     }
 
