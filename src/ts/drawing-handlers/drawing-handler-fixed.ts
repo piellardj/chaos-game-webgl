@@ -1,8 +1,8 @@
 import ChaosGame from "../chaos-game";
 import { Parameters } from "../parameters";
-import ModeBase from "./mode-base";
+import DrawingHandlerBase from "./drawing-handler-base";
 
-class ModeFixed extends ModeBase {
+class DrawingHandlerFixed extends DrawingHandlerBase {
     private _totalPointsDrawn: number;
 
     public reset(): void {
@@ -26,4 +26,4 @@ class ModeFixed extends ModeBase {
     }
 }
 
-export default ModeFixed;
+export default DrawingHandlerFixed;

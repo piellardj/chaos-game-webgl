@@ -6,8 +6,7 @@ import Game from "./chaos-game";
 import DownloadCanvas from "./downloader";
 import { Mode, Parameters, Theme } from "./parameters";
 
-import ModeBase from "./mode/mode-base";
-import * as Modes from "./mode/modes";
+import * as DrawingHandlers from "./drawing-handlers/drawing-handlers";
 
 declare const Canvas: any;
 
@@ -51,25 +50,25 @@ function main() {
         needToClearCanvas = false;
     }
 
-    let mode: ModeBase;
+    let drawingHandler: DrawingHandlers.Base;
 
     let firstDraw = true;
     function mainLoop() {
         if (!lockedCanvas) {
             if (needToClearCanvas) {
                 clearCanvas();
-                mode = (Parameters.mode ===  Mode.FIXED) ? Modes.fixed : Modes.movement;
-                mode.reset();
+                drawingHandler = (Parameters.mode ===  Mode.FIXED) ? DrawingHandlers.fixed : DrawingHandlers.movement;
+                drawingHandler.reset();
             }
 
             if (Canvas.isMouseDown()) {
-                Modes.preview.drawStep(game);
-                setTotalPoints(Modes.preview.totalPointsDrawn);
+                DrawingHandlers.preview.drawStep(game);
+                setTotalPoints(DrawingHandlers.preview.totalPointsDrawn);
                 needToClearCanvas = true;
             } else if (game.isReadyToDraw) {
-                if (mode.needsToKeepDrawing) {
-                    mode.drawStep(game);
-                    setTotalPoints(mode.totalPointsDrawn);
+                if (drawingHandler.needsToKeepDrawing) {
+                    drawingHandler.drawStep(game);
+                    setTotalPoints(drawingHandler.totalPointsDrawn);
                 }
 
                 if (firstDraw) {

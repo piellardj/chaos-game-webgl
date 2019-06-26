@@ -1,6 +1,6 @@
 import ChaosGame from "../chaos-game";
 
-abstract class ModeBase {
+abstract class DrawingHandlerBase {
     public abstract reset(): void;
     public abstract drawStep(game: ChaosGame): void;
 
@@ -8,4 +8,4 @@ abstract class ModeBase {
     public abstract get totalPointsDrawn(): number;
 }
 
-export default ModeBase;
+export default DrawingHandlerBase;

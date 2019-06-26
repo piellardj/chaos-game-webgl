@@ -1,8 +1,8 @@
 import ChaosGame from "../chaos-game";
 import { Parameters } from "../parameters";
-import ModeBase from "./mode-base";
+import DrawingHandlerBase from "./drawing-handler-base";
 
-class ModeMovement extends ModeBase {
+class DrawingModeMovement extends DrawingHandlerBase {
     private _totalPointsDrawn: number;
     private _distance: number;
     private _pointsNeededPerStep: number;
@@ -35,4 +35,4 @@ class ModeMovement extends ModeBase {
     }
 }
 
-export default ModeMovement;
+export default DrawingModeMovement;

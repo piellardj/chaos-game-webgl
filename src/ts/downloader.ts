@@ -3,7 +3,7 @@ import { gl } from "./gl-utils/gl-canvas";
 import Viewport from "./gl-utils/viewport";
 
 import Game from "./chaos-game";
-import * as Modes from "./mode/modes";
+import * as DrawingHandlers from "./drawing-handlers/drawing-handlers";
 import { Mode, Parameters } from "./parameters";
 
 declare const Canvas: any;
@@ -55,10 +55,10 @@ function downloadCanvas(game: Game, size: number): void {
 
     gl.clear(gl.COLOR_BUFFER_BIT);
 
-    const mode = (Parameters.mode === Mode.FIXED) ? Modes.fixed : Modes.movement;
-    mode.reset();
-    while (mode.needsToKeepDrawing) {
-        mode.drawStep(game);
+    const handler = (Parameters.mode === Mode.FIXED) ? DrawingHandlers.fixed : DrawingHandlers.movement;
+    handler.reset();
+    while (handler.needsToKeepDrawing) {
+        handler.drawStep(game);
     }
 
     const downloadedName = "chaos-game.png";

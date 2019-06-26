@@ -1,11 +1,11 @@
 import ChaosGame from "../chaos-game";
 import { Parameters } from "../parameters";
-import ModeBase from "./mode-base";
+import DrawingHandlerBase from "./drawing-handler-base";
 
 const quality = 0;
 const nbPoints = Math.pow(2, 17);
 
-class ModePreview extends ModeBase {
+class DrawingHandlerPreview extends DrawingHandlerBase {
     /* tslint:disable:no-empty */
     public reset(): void {}
     /* tslint:enable:no-empty */
@@ -23,4 +23,4 @@ class ModePreview extends ModeBase {
     }
 }
 
-export default ModePreview;
+export default DrawingHandlerPreview;
