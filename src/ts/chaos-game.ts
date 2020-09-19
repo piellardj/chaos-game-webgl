@@ -9,7 +9,7 @@ import { Parameters } from "./parameters";
 
 import * as Attractors from "./restriction";
 
-declare const Canvas: any;
+import "./page-interface-generated";
 
 interface IPointsSet {
     color: number[];
@@ -37,8 +37,8 @@ class ChaosGame extends GLResource {
 
         this._viewCenter = [0, 0];
 
-        Canvas.Observers.mouseDrag.push((dX: number, dY: number) => {
-            const canvasSize = Canvas.getSize();
+        Page.Canvas.Observers.mouseDrag.push((dX: number, dY: number) => {
+            const canvasSize = Page.Canvas.getSize();
             const aspectRatio = canvasSize[0] / canvasSize[1];
 
             this._viewCenter[0] -= 2 * dX * Parameters.scale * aspectRatio;
@@ -108,7 +108,7 @@ class ChaosGame extends GLResource {
     }
 
     private recomputePolesPositions(nbPoles: number): Float32Array {
-        const canvas = Canvas.getSize();
+        const canvas = Page.Canvas.getSize();
         const aspectRatio = canvas[0] / canvas[1];
         const absoluteToViewport = (point: number[]) => [
             ((point[0] - this._viewCenter[0]) / (Parameters.scale * aspectRatio)),

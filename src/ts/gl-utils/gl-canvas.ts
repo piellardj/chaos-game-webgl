@@ -1,15 +1,14 @@
-declare const Demopage: any;
-declare const Canvas: any;
+import "../page-interface-generated";
 
 let gl: WebGLRenderingContext = null;
 
 /** Initializes a WebGL context */
 function initGL(flags: any): boolean {
     function setError(message: string) {
-        Demopage.setErrorMessage("webgl-support", message);
+        Page.Demopage.setErrorMessage("webgl-support", message);
     }
 
-    const canvas = Canvas.getCanvas();
+    const canvas = Page.Canvas.getCanvas();
 
     gl = canvas.getContext("webgl", flags) as WebGLRenderingContext;
     if (gl == null) {

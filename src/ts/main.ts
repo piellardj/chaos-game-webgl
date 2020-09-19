@@ -8,12 +8,12 @@ import { Mode, Parameters, Theme } from "./parameters";
 
 import * as DrawingHandlers from "./drawing-handlers/drawing-handlers";
 
-declare const Canvas: any;
+import "./page-interface-generated";
 
 function main() {
     initGL();
 
-    Canvas.showLoader(true);
+    Page.Canvas.showLoader(true);
 
     Parameters.quality = 0.6;
     Parameters.colors = false;
@@ -29,7 +29,7 @@ function main() {
     let totalPoints: number;
     function setTotalPoints(total: number): void {
         totalPoints = total;
-        Canvas.setIndicatorText("points-drawn", totalPoints.toLocaleString());
+        Page.Canvas.setIndicatorText("points-drawn", totalPoints.toLocaleString());
     }
     setTotalPoints(0);
 
@@ -61,7 +61,7 @@ function main() {
                 drawingHandler.reset();
             }
 
-            if (Canvas.isMouseDown()) {
+            if (Page.Canvas.isMouseDown()) {
                 DrawingHandlers.preview.drawStep(game);
                 setTotalPoints(DrawingHandlers.preview.totalPointsDrawn);
                 needToClearCanvas = true;
@@ -73,7 +73,7 @@ function main() {
 
                 if (firstDraw) {
                     firstDraw = false;
-                    Canvas.showLoader(false);
+                    Page.Canvas.showLoader(false);
                 }
             }
         }

@@ -6,10 +6,10 @@ import Game from "./chaos-game";
 import * as DrawingHandlers from "./drawing-handlers/drawing-handlers";
 import { Mode, Parameters } from "./parameters";
 
-declare const Canvas: any;
+import "./page-interface-generated";
 
 function downloadCanvas(game: Game, size: number): void {
-    const canvas = Canvas.getCanvas() as HTMLCanvasElement;
+    const canvas = Page.Canvas.getCanvas() as HTMLCanvasElement;
 
     const nbPointsNeeded = Parameters.computeNbPointsNeeded([size, size]);
     if (nbPointsNeeded > 50000000) {
@@ -22,14 +22,14 @@ function downloadCanvas(game: Game, size: number): void {
     }
 
     function manuallyTriggerCanvasResizeEvent() {
-        const canvasSize = Canvas.getSize();
-        for (const func of Canvas.Observers.canvasResize) {
+        const canvasSize = Page.Canvas.getSize();
+        for (const func of Page.Canvas.Observers.canvasResize) {
             func(canvasSize[0], canvasSize[1]);
         }
     }
 
     function isolateCanvas() {
-        Canvas.showLoader(true);
+        Page.Canvas.showLoader(true);
 
         canvas.style.position = "absolute";
         canvas.style.width = size + "px";
@@ -46,8 +46,8 @@ function downloadCanvas(game: Game, size: number): void {
         canvas.style.position = "";
         canvas.style.width = "";
         canvas.style.height = "";
-        Canvas.showLoader(false);
-        Canvas.setLoaderText("");
+        Page.Canvas.showLoader(false);
+        Page.Canvas.setLoaderText("");
         manuallyTriggerCanvasResizeEvent();
     }
 
