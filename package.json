@@ -14,7 +14,7 @@
     "rebuild": "npm run clean && npm run build",
     "webpack": "webpack --config src/config/webpack.config.js --output docs/script/main.min.js"
   },
-  "author": "“Jérémie PIELLARD <jeremie.piellard@gmail.com> (https://github.com/piellardj)",
+  "author": "Jérémie PIELLARD <jeremie.piellard@gmail.com> (https://github.com/piellardj)",
   "repository": "github:piellardj/chaos-game-webgl",
   "license": "ISC",
   "devDependencies": {
