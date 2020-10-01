@@ -225,7 +225,7 @@ function restartRendering() {
 
 let scale = 1.0;
 const MIN_SCALE = 0.05; // should be > 0
-const MAX_SCALE = 4.0;
+const MAX_SCALE = 6.0;
 Page.Canvas.Observers.mouseWheel.push((delta: number, zoomCenter: number[]) => {
     const newScale = clamp(scale * (1 + 0.2 * delta), MIN_SCALE, MAX_SCALE);
 
