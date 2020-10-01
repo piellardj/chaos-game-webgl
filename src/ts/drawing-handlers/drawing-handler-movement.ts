@@ -55,7 +55,7 @@ class DrawingModeMovement extends DrawingHandlerBase {
     }
 
     private static computePointsPerDistanceUnit(sizeFactor: number): number {
-        return Math.ceil(500 * Parameters.nbPointsNeeded * sizeFactor * sizeFactor);
+        return Math.ceil(2000 * Parameters.nbPointsNeeded * sizeFactor * sizeFactor);
     }
 
     private drawDistanceGap(game: ChaosGame, distanceGap: number): void {
