@@ -51,7 +51,7 @@ class DrawingModeMovement extends DrawingHandlerBase {
         const sizeFactor = Parameters.computeSizeFactor(canvasSize);
         const pointsPerDistanceUnit = DrawingModeMovement.computePointsPerDistanceUnit(sizeFactor);
         const totalDistance = Parameters.distanceTo - Parameters.distanceFrom;
-        return pointsPerDistanceUnit * totalDistance;
+        return Math.ceil(pointsPerDistanceUnit * totalDistance);
     }
 
     private static computePointsPerDistanceUnit(sizeFactor: number): number {
