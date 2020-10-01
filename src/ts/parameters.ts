@@ -91,7 +91,7 @@ function recomputeSizeFactor() {
 }
 
 /* === INTERFACE ====================================================== */
-class Parameters {
+abstract class Parameters {
     public static get scale(): number {
         return scale;
     }
@@ -215,8 +215,6 @@ class Parameters {
     public static get resetViewObservers(): GenericObserver[] {
         return observers.resetView;
     }
-
-    private constructor() { }
 }
 
 /* === EVENTS BINDING ================================================= */
