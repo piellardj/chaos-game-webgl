@@ -75,7 +75,7 @@ Page.Canvas.Observers.mouseDrag.push(() => callObservers(observers.clear));
 
 let nbPointsNeeded: number = 0;
 function recomputeNbPointsNeeded() {
-    const newValue = Parameters.computeNbPointsNeeded(Page.Canvas.getSize());
+    const newValue = intensity * (quality + 0.1);
     const needToRedraw = (mode === Mode.MOVEMENT) || (newValue < nbPointsNeeded);
     nbPointsNeeded = newValue;
 
@@ -84,15 +84,14 @@ function recomputeNbPointsNeeded() {
     }
 }
 
+let sizeFactor: number = 0;
+function recomputeSizeFactor() {
+    const canvasSize = Page.Canvas.getSize();
+    sizeFactor = Parameters.computeSizeFactor(canvasSize);
+}
+
 /* === INTERFACE ====================================================== */
 class Parameters {
-    public static computeNbPointsNeeded(canvasSize: number[]): number {
-        const minSide = Math.min(canvasSize[0], canvasSize[1]);
-        const nbUsefulPixels = minSide * minSide;
-        const exactValue = 2000 * intensity * (quality + 0.1) * nbUsefulPixels / (scale * scale);
-        return Math.ceil(exactValue);
-    }
-
     public static get scale(): number {
         return scale;
     }
@@ -101,8 +100,21 @@ class Parameters {
         callObservers(observers.clear);
     }
 
+    public static computeSizeFactor(canvasSize: number[]): number {
+        const minSide = Math.min(canvasSize[0], canvasSize[1]);
+        console.log(minSide / scale);
+        return minSide / scale;
+    }
+    public static get sizeFactor(): number {
+        return sizeFactor;
+    }
+
     public static get nbPointsNeeded(): number {
         return nbPointsNeeded;
+    }
+
+    public static get intensity(): number {
+        return intensity;
     }
     public static set intensity(i: number) {
         Page.Range.setValue(controlId.INTENSITY, i);
@@ -204,7 +216,7 @@ class Parameters {
         return observers.resetView;
     }
 
-    private constructor() {}
+    private constructor() { }
 }
 
 /* === EVENTS BINDING ================================================= */
@@ -221,7 +233,7 @@ Page.Canvas.Observers.mouseWheel.push((delta: number, zoomCenter: number[]) => {
 
     if (newScale !== scale) {
         scale = newScale;
-        recomputeNbPointsNeeded();
+        recomputeSizeFactor();
         restartRendering();
     }
 });
@@ -388,10 +400,11 @@ Page.Picker.addObserver(controlId.RESTRICTIONS, (v: string) => {
 });
 
 Page.Canvas.Observers.canvasResize.push(() => {
-    recomputeNbPointsNeeded();
+    recomputeSizeFactor();
     restartRendering();
 });
 recomputeNbPointsNeeded();
+recomputeSizeFactor();
 
 export {
     Mode,

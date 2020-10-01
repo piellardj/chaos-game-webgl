@@ -6,6 +6,7 @@ abstract class DrawingHandlerBase {
 
     public abstract get needsToKeepDrawing(): boolean;
     public abstract get totalPointsDrawn(): number;
+    public abstract computeTotalPointsNeeded(canvasSize: number[]): number;
 }
 
 export default DrawingHandlerBase;

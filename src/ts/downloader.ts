@@ -10,8 +10,9 @@ import "./page-interface-generated";
 
 function downloadCanvas(game: Game, size: number): void {
     const canvas = Page.Canvas.getCanvas() as HTMLCanvasElement;
+    const handler = (Parameters.mode === Mode.FIXED) ? DrawingHandlers.fixed : DrawingHandlers.movement;
 
-    const nbPointsNeeded = Parameters.computeNbPointsNeeded([size, size]);
+    const nbPointsNeeded = handler.computeTotalPointsNeeded([size, size]);
     if (nbPointsNeeded > 50000000) {
         const message = "Rendering your image might take a while " +
             "because it requires to draw " + nbPointsNeeded.toLocaleString() + " points. " +
@@ -55,7 +56,6 @@ function downloadCanvas(game: Game, size: number): void {
 
     gl.clear(gl.COLOR_BUFFER_BIT);
 
-    const handler = (Parameters.mode === Mode.FIXED) ? DrawingHandlers.fixed : DrawingHandlers.movement;
     handler.reset();
     while (handler.needsToKeepDrawing) {
         handler.drawStep(game);

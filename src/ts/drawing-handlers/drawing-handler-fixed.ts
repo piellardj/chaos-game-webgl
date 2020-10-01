@@ -10,7 +10,7 @@ class DrawingHandlerFixed extends DrawingHandlerBase {
     }
 
     public drawStep(game: ChaosGame): void {
-        const nbPointsToDraw = Parameters.nbPointsNeeded - this._totalPointsDrawn;
+        const nbPointsToDraw = this.nbPointsNeeded - this._totalPointsDrawn;
         const nbPoints = Math.min(ChaosGame.MAX_POINTS_PER_STEP, nbPointsToDraw);
         game.draw(nbPoints, Parameters.distance, Parameters.quality);
 
@@ -18,11 +18,26 @@ class DrawingHandlerFixed extends DrawingHandlerBase {
     }
 
     public get needsToKeepDrawing(): boolean {
-        return this._totalPointsDrawn < Parameters.nbPointsNeeded;
+        return this._totalPointsDrawn < this.nbPointsNeeded;
     }
 
     public get totalPointsDrawn(): number {
         return this._totalPointsDrawn;
+    }
+
+    public computeTotalPointsNeeded(canvasSize: number[]): number {
+        const sizeFactor = Parameters.computeSizeFactor(canvasSize);
+        return DrawingHandlerFixed.computeTotalPointsNeededInternal(sizeFactor);
+    }
+
+    private  static computeTotalPointsNeededInternal(sizeFactor: number): number {
+        const exactValue = 2000 * Parameters.nbPointsNeeded * sizeFactor * sizeFactor;
+        return Math.ceil(exactValue);
+    }
+
+    private get nbPointsNeeded(): number {
+        const sizeFactor = Parameters.sizeFactor;
+        return DrawingHandlerFixed.computeTotalPointsNeededInternal(sizeFactor);
     }
 }
 

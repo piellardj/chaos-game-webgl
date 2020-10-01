@@ -3,7 +3,7 @@ import { Parameters } from "../parameters";
 import DrawingHandlerBase from "./drawing-handler-base";
 
 const quality = 0;
-const nbPoints = Math.pow(2, 17);
+const nbPointsNeeded = Math.pow(2, 17);
 
 class DrawingHandlerPreview extends DrawingHandlerBase {
     /* tslint:disable:no-empty */
@@ -11,7 +11,7 @@ class DrawingHandlerPreview extends DrawingHandlerBase {
     /* tslint:enable:no-empty */
 
     public drawStep(game: ChaosGame): void {
-        game.draw(nbPoints, Parameters.distance, quality);
+        game.draw(nbPointsNeeded, Parameters.distance, quality);
     }
 
     public get needsToKeepDrawing(): boolean {
@@ -19,7 +19,11 @@ class DrawingHandlerPreview extends DrawingHandlerBase {
     }
 
     public get totalPointsDrawn(): number {
-        return nbPoints;
+        return nbPointsNeeded;
+    }
+
+    public computeTotalPointsNeeded(canvasSize: number[]): number {
+        return nbPointsNeeded;
     }
 }
 
