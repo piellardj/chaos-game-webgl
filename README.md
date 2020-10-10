@@ -1,7 +1,7 @@
 # Chaos Game
 This project is an implementation of different Chaos Game variations running on CPU and rendered with WebGL.
 
-[See it live here.](https://piellardj.github.io/chaos-game-webgl)
+See it live [here](https://piellardj.github.io/chaos-game-webgl/?page%3Acanvas%3Afullscreen=true&page%3Acanvas%3Asidepane=true).
 
 ## Description
 
