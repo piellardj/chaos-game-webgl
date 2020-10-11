@@ -103,7 +103,6 @@ abstract class Parameters {
 
     public static computeSizeFactor(canvasSize: number[]): number {
         const minSide = Math.min(canvasSize[0], canvasSize[1]);
-        console.log(minSide / scale);
         return minSide / scale;
     }
     public static get sizeFactor(): number {
