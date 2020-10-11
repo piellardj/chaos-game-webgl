@@ -146,11 +146,33 @@ class ChaosGame extends GLResource {
         /* Ignore the first N points because they might not be at the right place */
         const pos = [2 * Math.random() - 1, 2 * Math.random() - 1];
 
-        function nextPos(): number {
+        function nextPosWithoutRotation(): number {
             const pole = choosePole(nbPoles);
             pos[0] += distance * (poles[2 * pole + 0] - pos[0]);
             pos[1] += distance * (poles[2 * pole + 1] - pos[1]);
             return pole;
+        }
+
+        const aspectRatio = Page.Canvas.getAspectRatio();
+        const rotationTheta = Parameters.rotation * 0.125 * Math.PI;
+        const rotationMatrix00 = Math.cos(rotationTheta) / aspectRatio;
+        const rotationMatrix10 = -Math.sin(rotationTheta) / aspectRatio;
+        const rotationMatrix01 = Math.sin(rotationTheta);
+        const rotationMatrix11 = Math.cos(rotationTheta);
+        function nextPosWithRotation(): number {
+            const pole = choosePole(nbPoles);
+            const dX = distance * (poles[2 * pole + 0] - pos[0]) * aspectRatio;
+            const dY = distance * (poles[2 * pole + 1] - pos[1]);
+            pos[0] += (dX * rotationMatrix00 + dY * rotationMatrix10);
+            pos[1] += dX * rotationMatrix01 + dY * rotationMatrix11;
+            return pole;
+        }
+
+        let nextPos: () => number;
+        if (Parameters.rotation !== 0) {
+            nextPos = nextPosWithRotation;
+        } else {
+            nextPos = nextPosWithoutRotation;
         }
 
         for (let i = 0; i < 500; ++i) {

@@ -3,6 +3,7 @@ import { Restriction } from "./restriction";
 interface IPreset {
     poles: number;
     distance: number;
+    rotation: number;
     restriction: Restriction;
     scale: number;
     intensity: number;
@@ -12,6 +13,7 @@ const presets: IPreset[] = [];
 presets[0] = {
     poles: 3,
     distance: 0.5,
+    rotation: 0,
     restriction: Restriction.NONE,
     scale: 1,
     intensity: 0.01,
@@ -19,6 +21,7 @@ presets[0] = {
 presets[1] = {
     poles: 6,
     distance: 0.5,
+    rotation: 0,
     restriction: Restriction.NONE,
     scale: 0.75,
     intensity: 0.03,
@@ -26,6 +29,7 @@ presets[1] = {
 presets[2] = {
     poles: 3,
     distance: 1.5,
+    rotation: 0,
     restriction: Restriction.NONE,
     scale: 3,
     intensity: 0.08,
@@ -33,6 +37,7 @@ presets[2] = {
 presets[3] = {
     poles: 5,
     distance: 0.5,
+    rotation: 0,
     restriction: Restriction.NONE,
     scale: 1,
     intensity: 0.03,
@@ -40,6 +45,7 @@ presets[3] = {
 presets[4] = {
     poles: 4,
     distance: 0.5,
+    rotation: 0,
     restriction: Restriction.NO_REPEAT,
     scale: 0.8,
     intensity: 0.01,
@@ -47,6 +53,7 @@ presets[4] = {
 presets[5] = {
     poles: 4,
     distance: 0.5,
+    rotation: 0,
     restriction: Restriction.NO_NEIGHBOUR_AFTER_REPEAT,
     scale: 0.8,
     intensity: 0.02,
@@ -54,6 +61,7 @@ presets[5] = {
 presets[6] = {
     poles: 4,
     distance: 1.5,
+    rotation: 0,
     restriction: Restriction.NO_REPEAT,
     scale: 2.5,
     intensity: 0.07,
@@ -61,6 +69,7 @@ presets[6] = {
 presets[7] = {
     poles: 6,
     distance: 0.57,
+    rotation: 0,
     restriction: Restriction.NONE,
     scale: 1.2,
     intensity: 0.03,
@@ -68,6 +77,7 @@ presets[7] = {
 presets[8] = {
     poles: 6,
     distance: 1.5,
+    rotation: 0,
     restriction: Restriction.NO_REPEAT,
     scale: 2,
     intensity: 0.2,
@@ -75,6 +85,7 @@ presets[8] = {
 presets[9] = {
     poles: 4,
     distance: 0.4,
+    rotation: 0,
     restriction: Restriction.NO_REPEAT,
     scale: 0.8,
     intensity: 0.01,
@@ -82,6 +93,7 @@ presets[9] = {
 presets[10] = {
     poles: 4,
     distance: 1.618,
+    rotation: 0,
     restriction: Restriction.NO_REPEAT,
     scale: 3,
     intensity: 0.4,
@@ -89,6 +101,7 @@ presets[10] = {
 presets[11] = {
     poles: 5,
     distance: 1.618,
+    rotation: 0,
     restriction: Restriction.NO_REPEAT,
     scale: 4,
     intensity: 0.3,
@@ -96,6 +109,7 @@ presets[11] = {
 presets[12] = {
     poles: 3,
     distance: 1.618,
+    rotation: 0,
     restriction: Restriction.NO_REPEAT,
     scale: 4,
     intensity: 0.15,
@@ -103,6 +117,7 @@ presets[12] = {
 presets[13] = {
     poles: 4,
     distance: 1.618,
+    rotation: 0,
     restriction: Restriction.NONE,
     scale: 4,
     intensity: 0.4,
@@ -110,6 +125,7 @@ presets[13] = {
 presets[14] = {
     poles: 6,
     distance: 0.667,
+    rotation: 0,
     restriction: Restriction.NONE,
     scale: 0.65,
     intensity: 0.02,
@@ -117,6 +133,7 @@ presets[14] = {
 presets[15] = {
     poles: 5,
     distance: 1.5,
+    rotation: 0,
     restriction: Restriction.NO_NEIGHBOUR_AFTER_REPEAT,
     scale: 3,
     intensity: 0.16,
@@ -124,6 +141,7 @@ presets[15] = {
 presets[16] = {
     poles: 5,
     distance: 1.5,
+    rotation: 0,
     restriction: Restriction.NO_NEIGHBOUR,
     scale: 3,
     intensity: 0.07,
@@ -131,6 +149,7 @@ presets[16] = {
 presets[17] = {
     poles: 7,
     distance: 1.445,
+    rotation: 0,
     restriction: Restriction.NO_DOUBLE_REPEAT,
     scale: 1.5,
     intensity: 0.2,
@@ -138,6 +157,7 @@ presets[17] = {
 presets[18] = {
     poles: 4,
     distance: 0.5,
+    rotation: 0,
     restriction: Restriction.NO_DOUBLE_REPEAT,
     scale: 0.75,
     intensity: 0.03,
@@ -145,6 +165,7 @@ presets[18] = {
 presets[19] = {
     poles: 3,
     distance: 0.386,
+    rotation: 0,
     restriction: Restriction.NO_RIGHT_NEIGHBOUR,
     scale: 1,
     intensity: 0.03,
@@ -152,6 +173,7 @@ presets[19] = {
 presets[20] = {
     poles: 3,
     distance: 1.755,
+    rotation: 0,
     restriction: Restriction.NO_REPEAT,
     scale: 4,
     intensity: 1,
@@ -159,6 +181,7 @@ presets[20] = {
 presets[21] = {
     poles: 3,
     distance: 1.647,
+    rotation: 0,
     restriction: Restriction.NO_RIGHT_NEIGHBOUR,
     scale: 1,
     intensity: 0.05,

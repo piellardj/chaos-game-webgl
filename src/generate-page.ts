@@ -208,6 +208,15 @@ const data = {
                     step: 0.001
                 },
                 {
+                    type: Demopage.supportedControls.Range,
+                    title: "Rotation",
+                    id: "rotation-range-id",
+                    min: -1,
+                    max: 1,
+                    value: 0,
+                    step: 0.05
+                },
+                {
                     type: Demopage.supportedControls.Picker,
                     title: "Restrictions",
                     id: "restrictions-picker-id",

@@ -22,6 +22,7 @@ const controlId = {
     DISTANCE: "distance-range-id",
     DISTANCE_FROM: "distance-from-range-id",
     DISTANCE_TO: "distance-to-range-id",
+    ROTATION: "rotation-range-id",
     FORBID_REPEAT: "forbid-repeat-checkbox-id",
     RESTRICTIONS: "restrictions-picker-id",
 
@@ -196,6 +197,14 @@ abstract class Parameters {
         Page.Range.setValue(controlId.DISTANCE_TO, d);
     }
 
+    public static get rotation(): number {
+        return rotation;
+    }
+    public static set rotation(r: number) {
+        rotation = r;
+        Page.Range.setValue(controlId.ROTATION, r);
+    }
+
     public static get restriction(): Restriction {
         return restriction;
     }
@@ -278,6 +287,7 @@ function applyPresetFixed(newPresetId: number) {
 
         Parameters.poles = preset.poles;
         Parameters.distance = preset.distance;
+        Parameters.rotation = preset.rotation;
         Parameters.restriction = preset.restriction;
         Parameters.scale = preset.scale;
         Parameters.intensity = preset.intensity;
@@ -309,6 +319,7 @@ function applyPresetMovement(newPresetId: number) {
         Parameters.poles = preset.poles;
         Parameters.distanceFrom = preset.distanceFrom;
         Parameters.distanceTo = preset.distanceTo;
+        Parameters.rotation = preset.rotation;
         Parameters.restriction = preset.restriction;
         Parameters.scale = preset.scale;
         Parameters.intensity = preset.intensity;
@@ -351,6 +362,14 @@ Page.Range.addObserver(controlId.DISTANCE_FROM, (df: number) => {
 let distanceTo: number = Page.Range.getValue(controlId.DISTANCE_TO);
 Page.Range.addObserver(controlId.DISTANCE_TO, (dt: number) => {
     distanceTo = dt;
+    clearPresetMovement();
+    restartRendering();
+});
+
+let rotation: number = Page.Range.getValue(controlId.ROTATION);
+Page.Range.addObserver(controlId.ROTATION, (r: number) => {
+    rotation = r;
+    clearPresetFixed();
     clearPresetMovement();
     restartRendering();
 });
