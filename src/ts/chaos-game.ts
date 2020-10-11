@@ -38,9 +38,7 @@ class ChaosGame extends GLResource {
         this._viewCenter = [0, 0];
 
         Page.Canvas.Observers.mouseDrag.push((dX: number, dY: number) => {
-            const canvasSize = Page.Canvas.getSize();
-            const aspectRatio = canvasSize[0] / canvasSize[1];
-
+            const aspectRatio = Page.Canvas.getAspectRatio();
             this._viewCenter[0] -= 2 * dX * Parameters.scale * aspectRatio;
             this._viewCenter[1] += 2 * dY * Parameters.scale;
         });
@@ -108,8 +106,7 @@ class ChaosGame extends GLResource {
     }
 
     private recomputePolesPositions(nbPoles: number): Float32Array {
-        const canvas = Page.Canvas.getSize();
-        const aspectRatio = canvas[0] / canvas[1];
+        const aspectRatio = Page.Canvas.getAspectRatio();
         const absoluteToViewport = (point: number[]) => [
             ((point[0] - this._viewCenter[0]) / (Parameters.scale * aspectRatio)),
             ((point[1] - this._viewCenter[1]) / Parameters.scale),
