@@ -11,7 +11,7 @@ interface IPreset {
 }
 
 const presets: IPreset[] = [];
-presets[0] = {
+presets[0] = { // Triangle outer
     poles: 3,
     distanceFrom: 1,
     distanceTo: 1.6,
@@ -20,7 +20,7 @@ presets[0] = {
     scale: 3,
     intensity: 0.1,
 };
-presets[1] = {
+presets[1] = { // Pentagon inner
     poles: 5,
     distanceFrom: 0.5,
     distanceTo: 1,
@@ -29,7 +29,7 @@ presets[1] = {
     scale: 1,
     intensity: 0.1,
 };
-presets[2] = {
+presets[2] = { // Palms
     poles: 6,
     distanceFrom: 1,
     distanceTo: 1.5,
@@ -38,7 +38,7 @@ presets[2] = {
     scale: 2.5,
     intensity: 0.1,
 };
-presets[3] = {
+presets[3] = { // Triangle side
     poles: 3,
     distanceFrom: 1,
     distanceTo: 1.7,
@@ -47,7 +47,7 @@ presets[3] = {
     scale: 3,
     intensity: 0.175,
 };
-presets[4] = {
+presets[4] = { // Star
     poles: 5,
     distanceFrom: 0.265,
     distanceTo: 1.65,
