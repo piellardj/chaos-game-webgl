@@ -98,6 +98,7 @@ abstract class Parameters {
     }
     public static set scale(s: number) {
         scale = clamp(s, MIN_SCALE, MAX_SCALE);
+        recomputeSizeFactor();
         callObservers(observers.clear);
     }
 
