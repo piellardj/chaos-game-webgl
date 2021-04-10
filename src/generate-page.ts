@@ -338,7 +338,7 @@ const data = {
 };
 
 const DEST_DIR = path.resolve(__dirname, "..", "docs");
-const minified = true;
+const minified = false;
 
 const buildResult = Demopage.build(data, DEST_DIR, {
     debug: !minified,

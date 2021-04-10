@@ -11,12 +11,17 @@
     <link rel="icon" type="image/png" href="favicon-16x16.png" sizes="16x16">
     <link rel="icon" type="image/png" href="favicon-32x32.png" sizes="32x32">
     <link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96">
-    <link rel="stylesheet" type="text/css" href="css/page.css">
+    <link rel="stylesheet" type="text/css" href="css/page.css?v=2021-04-10T19%3A14%3A01.540Z">
   </head>
 
   <body>
     <header>
-      <a class="logo" href="https://piellardj.github.io"></a>
+      <a class="logo logo-animate-fill" href="https://piellardj.github.io" id="back-to-home-button" aria-label="Go to home">
+        <svg class="logo-icon" xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+          <g stroke-width="2">
+            <path fill="none" stroke-linejoin="round" d="M17.5,32h4.5v11h7v-7l1,-1h4l1,1v7h7v-11h4.5L32,16.5z" />
+        </svg>
+      </a>
     </header>
     <main>
       <div class="intro">
@@ -64,7 +69,6 @@
               <line x1="22" y1="10" x2="10" y2="22" stroke-linecap="round" stroke-width="2" />
             </svg>
           </label>
-
           <section class="controls-section">
             <h2>Parameters</h2>
 
@@ -81,9 +85,9 @@
               <div class="control" id="control-presets-fixed-picker-id">
                 <label>Preset:</label>
                 <div class="inline-picker compact" id="presets-fixed-picker-id" style='flex:1' data-placeholder=Custom>
-                  <div class="picker-button left">&nbsp;</div>
+                  <button class="picker-button left" aria-label="Previous value">&nbsp;</button>
                   <span></span>
-                  <div class="picker-button right">&nbsp;</div>
+                  <button class="picker-button right" aria-label="Next value">&nbsp;</button>
                   <input type="radio" name="presets-fixed-picker-id" value="0" data-label="Sierpinski triangle">
                   <input type="radio" name="presets-fixed-picker-id" value="1" data-label="Cathedral">
                   <input type="radio" name="presets-fixed-picker-id" value="2" data-label="Wires: triangle">
@@ -111,9 +115,9 @@
               <div class="control" id="control-presets-movement-picker-id">
                 <label>Preset:</label>
                 <div class="inline-picker compact" id="presets-movement-picker-id" style='flex:1' data-placeholder=Custom>
-                  <div class="picker-button left">&nbsp;</div>
+                  <button class="picker-button left" aria-label="Previous value">&nbsp;</button>
                   <span></span>
-                  <div class="picker-button right">&nbsp;</div>
+                  <button class="picker-button right" aria-label="Next value">&nbsp;</button>
                   <input type="radio" name="presets-movement-picker-id" value="0" data-label="Triangle outer">
                   <input type="radio" name="presets-movement-picker-id" value="1" data-label="Pentagon inner">
                   <input type="radio" name="presets-movement-picker-id" value="2" data-label="Palms">
@@ -123,45 +127,130 @@
               </div>
               <div class="control" id="control-poles-range-id">
                 <label>Attractors:</label>
-                <div class="range">
+                <div class="range-container">
                   <input type="range" min="3" max="16" value="5" step="1" class="slider" id="poles-range-id">
-                  <span class="tooltip"></span>
+                  <div class="range-skin-container">
+                    <div class="range-stub">
+                      <span class="range-bar range-bar-left range-stub-left"></span>
+                    </div>
+                    <div class="range-progress">
+                      <div class="range-progress-left">
+                        <span class="range-bar range-bar-left"></span>
+                        <span class="range-handle"></span>
+                        <output for="poles-range-id" class="range-tooltip"></output>
+                      </div>
+                      <div class="range-progress-right">
+                        <span class="range-bar range-bar-right"></span>
+                      </div>
+                    </div>
+                    <div class="range-stub">
+                      <span class="range-bar range-bar-right range-stub-right"></span>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div class="control" id="control-distance-range-id">
                 <label>Distance:</label>
-                <div class="range">
+                <div class="range-container">
                   <input type="range" min="0.1" max="2" value="0.5" step="0.001" class="slider" id="distance-range-id">
-                  <span class="tooltip"></span>
+                  <div class="range-skin-container">
+                    <div class="range-stub">
+                      <span class="range-bar range-bar-left range-stub-left"></span>
+                    </div>
+                    <div class="range-progress">
+                      <div class="range-progress-left">
+                        <span class="range-bar range-bar-left"></span>
+                        <span class="range-handle"></span>
+                        <output for="distance-range-id" class="range-tooltip"></output>
+                      </div>
+                      <div class="range-progress-right">
+                        <span class="range-bar range-bar-right"></span>
+                      </div>
+                    </div>
+                    <div class="range-stub">
+                      <span class="range-bar range-bar-right range-stub-right"></span>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div class="control" id="control-distance-from-range-id">
                 <label>Distance from:</label>
-                <div class="range">
+                <div class="range-container">
                   <input type="range" min="0.1" max="2" value="1" step="0.001" class="slider" id="distance-from-range-id">
-                  <span class="tooltip"></span>
+                  <div class="range-skin-container">
+                    <div class="range-stub">
+                      <span class="range-bar range-bar-left range-stub-left"></span>
+                    </div>
+                    <div class="range-progress">
+                      <div class="range-progress-left">
+                        <span class="range-bar range-bar-left"></span>
+                        <span class="range-handle"></span>
+                        <output for="distance-from-range-id" class="range-tooltip"></output>
+                      </div>
+                      <div class="range-progress-right">
+                        <span class="range-bar range-bar-right"></span>
+                      </div>
+                    </div>
+                    <div class="range-stub">
+                      <span class="range-bar range-bar-right range-stub-right"></span>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div class="control" id="control-distance-to-range-id">
                 <label>Distance to:</label>
-                <div class="range">
+                <div class="range-container">
                   <input type="range" min="0.1" max="2" value="1.85" step="0.001" class="slider" id="distance-to-range-id">
-                  <span class="tooltip"></span>
+                  <div class="range-skin-container">
+                    <div class="range-stub">
+                      <span class="range-bar range-bar-left range-stub-left"></span>
+                    </div>
+                    <div class="range-progress">
+                      <div class="range-progress-left">
+                        <span class="range-bar range-bar-left"></span>
+                        <span class="range-handle"></span>
+                        <output for="distance-to-range-id" class="range-tooltip"></output>
+                      </div>
+                      <div class="range-progress-right">
+                        <span class="range-bar range-bar-right"></span>
+                      </div>
+                    </div>
+                    <div class="range-stub">
+                      <span class="range-bar range-bar-right range-stub-right"></span>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div class="control" id="control-rotation-range-id">
                 <label>Rotation:</label>
-                <div class="range">
+                <div class="range-container">
                   <input type="range" min="-1" max="1" value="0" step="0.05" class="slider" id="rotation-range-id">
-                  <span class="tooltip"></span>
+                  <div class="range-skin-container">
+                    <div class="range-stub">
+                      <span class="range-bar range-bar-left range-stub-left"></span>
+                    </div>
+                    <div class="range-progress">
+                      <div class="range-progress-left">
+                        <span class="range-bar range-bar-left"></span>
+                        <span class="range-handle"></span>
+                        <output for="rotation-range-id" class="range-tooltip"></output>
+                      </div>
+                      <div class="range-progress-right">
+                        <span class="range-bar range-bar-right"></span>
+                      </div>
+                    </div>
+                    <div class="range-stub">
+                      <span class="range-bar range-bar-right range-stub-right"></span>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div class="control" id="control-restrictions-picker-id">
                 <label>Restrictions:</label>
                 <div class="inline-picker compact" id="restrictions-picker-id" style='flex:1' data-placeholder=Custom>
-                  <div class="picker-button left">&nbsp;</div>
+                  <button class="picker-button left" aria-label="Previous value">&nbsp;</button>
                   <span></span>
-                  <div class="picker-button right">&nbsp;</div>
+                  <button class="picker-button right" aria-label="Next value">&nbsp;</button>
                   <input type="radio" name="restrictions-picker-id" value="none" data-label="None">
                   <input type="radio" name="restrictions-picker-id" value="no-repeat" data-label="No repeat">
                   <input type="radio" name="restrictions-picker-id" value="no-double-repeat" data-label="No repeat twice">
@@ -173,23 +262,56 @@
             </div>
           </section>
           <hr />
-
           <section class="controls-section">
             <h2>Rendering</h2>
 
             <div class="controls-list">
               <div class="control" id="control-intensity-range-id">
                 <label>Intensity:</label>
-                <div class="range">
+                <div class="range-container">
                   <input type="range" min="0.01" max="1" value="0.1" step="0.01" class="slider" id="intensity-range-id">
-                  <span class="tooltip"></span>
+                  <div class="range-skin-container">
+                    <div class="range-stub">
+                      <span class="range-bar range-bar-left range-stub-left"></span>
+                    </div>
+                    <div class="range-progress">
+                      <div class="range-progress-left">
+                        <span class="range-bar range-bar-left"></span>
+                        <span class="range-handle"></span>
+                        <output for="intensity-range-id" class="range-tooltip"></output>
+                      </div>
+                      <div class="range-progress-right">
+                        <span class="range-bar range-bar-right"></span>
+                      </div>
+                    </div>
+                    <div class="range-stub">
+                      <span class="range-bar range-bar-right range-stub-right"></span>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div class="control" id="control-quality-range-id">
                 <label>Quality:</label>
-                <div class="range">
+                <div class="range-container">
                   <input type="range" min="0" max="1" value="0.6" step="0.1" class="slider" id="quality-range-id">
-                  <span class="tooltip"></span>
+                  <div class="range-skin-container">
+                    <div class="range-stub">
+                      <span class="range-bar range-bar-left range-stub-left"></span>
+                    </div>
+                    <div class="range-progress">
+                      <div class="range-progress-left">
+                        <span class="range-bar range-bar-left"></span>
+                        <span class="range-handle"></span>
+                        <output for="quality-range-id" class="range-tooltip"></output>
+                      </div>
+                      <div class="range-progress-right">
+                        <span class="range-bar range-bar-right"></span>
+                      </div>
+                    </div>
+                    <div class="range-stub">
+                      <span class="range-bar range-bar-right range-stub-right"></span>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div class="control" id="control-theme">
@@ -214,7 +336,6 @@
             </div>
           </section>
           <hr />
-
           <section class="controls-section">
             <h2>Download</h2>
 
@@ -232,7 +353,8 @@
               </div>
               <div class="control" id="control-result-download-id">
                 <div class="file-control download ">
-                  <label class="file-control-button" id="result-download-id">
+                  <input type="button" id="result-download-id" class="file-input" />
+                  <label class="file-control-button" for="result-download-id">
                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
                       <path d="M12 4L12 13 7 13 16 24 25 13 20 13 20 4ZM6 25L26 25 26 29 6 29Z" />
                     </svg>
@@ -269,8 +391,8 @@
         </a>
       </div>
     </footer>
-    <script src="script/page.min.js"></script>
-    <script src="script/main.min.js"></script>
+    <script src="script/page.js?v=2021-04-10T19%3A14%3A01.540Z"></script>
+    <script src="script/main.min.js?v=2021-04-10T19%3A14%3A01.540Z"></script>
   </body>
 
 </html>
