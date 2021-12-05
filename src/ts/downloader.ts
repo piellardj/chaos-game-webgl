@@ -64,7 +64,7 @@ function downloadCanvas(game: Game, size: number): void {
     const downloadedName = "chaos-game.png";
     if ((canvas as any).msToBlob) { // for IE
         const blob = (canvas as any).msToBlob();
-        window.navigator.msSaveBlob(blob, downloadedName);
+        (window.navigator as any).msSaveBlob(blob, downloadedName);
 
         restoreCanvas();
     } else {
