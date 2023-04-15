@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="description" content="Readme page of my project 'Chaos game'. WebGL implementation of the Chaos game." />
+    <title>Chaos game - Explanations</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="icon" type="image/png" href="favicon-16x16.png" sizes="16x16">
+    <link rel="icon" type="image/png" href="favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="favicon-96x96.png" sizes="96x96">
+    <link rel="stylesheet" type="text/css" href="css/page.css?v=2023-04-15T20%3A16%3A39.790Z">
+  </head>
+
+  <body>
+    <header>
+      <a class="logo logo-animate-fill" href="https://piellardj.github.io/chaos-game-webgl/" id="seep-live-button" title="Live project" aria-label="Live project">
+        <svg class="logo-icon" xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+          <g stroke-width="2">
+            <path fill="none" stroke-linejoin="round" d="M24,20v24L46,32z" />
+        </svg>
+      </a>
+    </header>
+    <main>
+      <div class="contents">
+        <h1 id="chaosgame">Chaos Game</h1>
+        <p>This project is an implementation of different Chaos Game variations running on CPU and rendered with WebGL.</p>
+        <p>See it live <a href="https://piellardj.github.io/chaos-game-webgl/?page%3Acanvas%3Afullscreen=true&page%3Acanvas%3Asidepane=true">here</a>.</p>
+        <h2 id="description">Description</h2>
+        <p>The Chaos Game is an iterative way of drawing fractals using a number of fixed invisible points called attractors and a single point that is repeatedly moved and drawn on the canvas. The initial position of the point is picked randomly on the canvas, and then the next position is computed as follow: a random attractor is chosen and the point is moved a fraction of the distance towards this attractor.</p>
+        <p>You can discover lots of different fractals by slightly modifying the parameters: number of attractors, distance used to move the point and restriction on the choice of the attractor depending on previous choices. Moreover, the simulation can run in an additional mode where the distance slowly drifts, resulting in flower-like patterns.</p>
+        <h2 id="preview">Preview</h2>
+        <p><img src="https://github.com/piellardj/chaos-game-webgl/raw/master/src/resources/README/crustacean.png" alt="Crustaceans" /></p>
+        <p><img src="https://github.com/piellardj/chaos-game-webgl/raw/master/src/resources/README/golden-square.png" alt="Golden Square" /></p>
+        <p><img src="https://github.com/piellardj/chaos-game-webgl/raw/master/src/resources/README/star.png" alt="Star" /></p>
+        <p><img src="https://github.com/piellardj/chaos-game-webgl/raw/master/src/resources/README/gecko.png" alt="Gecko" /></p>
+        <p><img src="https://github.com/piellardj/chaos-game-webgl/raw/master/src/resources/README/triangle.png" alt="Triangle" /></p>
+        <p><img src="https://github.com/piellardj/chaos-game-webgl/raw/master/src/resources/README/starmap.png" alt="Starmap" /></p>
+        <h2 id="implementationdetails">Implementation details</h2>
+        <h3 id="positionscomputing">Positions computing</h3>
+        <p>The computing part of the simulation is performed on the CPU and takes about 85% of the time when rendering the maximum number of points at once.</p>
+        <p>It runs in a single thread since it's done in Javascript. However this kind of simulation would be very well suited for multi-threading: one could move N points in parallel since they don't interact with each other, only with the fixed attractors.</p>
+        <p>I first tried to perform the computation on the GPU in a fragment shader, however the float precision was insufficient for the maximum zoom, especially on mobile devices. There are ways to emulate higher precision in shader but these techniques are quite costly.</p>
+        <p>Moreover, since I later added color information to the drawn points, a single texture would not be enough to store the position information (min. 2*16 bits) and the color information (min. 16 bits for storing the color directly, or 5 bits for storing only the attractor ID and recomputing the color when rendering).</p>
+        <h3 id="rendering">Rendering</h3>
+        <p>The rendering is done on the GPU with WebGL.</p>
+        <h4 id="datatransfer">Data transfer</h4>
+        <p>Since the points are computed on the CPU and rendered on the GPU, I need to transfer them efficiently. To do so, I pack them into a single VBO and order them by colors. For instance if there are four attractors, the first quarter of the VBO is filled with red points, second quarter with yellow, third with cyan and fourth one with purple. I then perform four calls to <code>gl.drawArrays</code> with a different offset each time and with the color passed by uniform.</p>
+        <h4 id="blending">Blending</h4>
+        <p>The canvas is configured to render in additive mode in order to create nice gradients. To make the additive blending to work, don't forget to pass the <code>preserveDrawingBuffer: true</code> property when creating the WebGL context.</p>
+        <p>The downside of using WebGL additive blending is that after many points are drawn on a pixel, its color becomes saturated and loses its subtle shades. In order to avoid this, I could perform the blending myself by rendering to two textures serving as double buffers and by performing in the fragment shader an additive blending that doesn't saturate colors (e.g. if the texel already has one saturated channel, don't add anything to it).</p>
+        <p>Unfortunately one bug remains, due to the lack of precision in the color formats (8 bit per RGB channel): when rendering with maxium quality, the colors are saturated and they are no subtle shades (using HDR rendering would solve this problem). The explanation is simple: each point color is saturated, that is, in the form HSV(x, 1, 1), which is in RGB equivalent to: one channel at 255, one channel at 0, and one channel between 0 and 255. When rendering to high quality, I multiply this saturated color by a scalar close to 0, so some channels might be rounded to 0.</p>
+      </div>
+    </main>
+
+    <footer>
+      <div class="badge-shelf">
+        <a class="badge" href="mailto:jeremie.piellard@gmail.com" title="Email">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" viewBox="0 0 512 512">
+            <path d="M512 85V448H0V85l256 224L512 85zM488 64H24L256 267 488 64z" />
+          </svg>
+        </a>
+
+        <a class="badge" href="https://github.com/piellardj" title="GitHub">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" viewBox="0 0 1024 1024">
+            <path d="M512 0C229 0 0 229 0 512c0 226 147 418 350 486 26 5 35-11 35-25 0-12 0-53-1-95C242 909 212 818 212 818c-23-59-57-75-57-75-47-32 4-31 4-31 51 4 78 53 78 53 46 78 120 56 149 43 5-33 18-56 33-68C305 725 185 682 185 485c0-56 20-102 53-137-5-13-23-65 5-136 0 0 43-14 141 53 41-11 85-17 128-17 44 0 87 6 128 17 98-66 141-52 141-52 28 71 10 123 5 136 33 36 53 81 53 137 0 197-120 240-234 253 18 16 35 47 35 95 0 68-1 124-1 141 0 14 9 30 35 25C877 930 1024 738 1024 512 1024 229 795 0 512 0z" />
+          </svg>
+        </a>
+
+        <a class="badge" href="https://www.linkedin.com/in/jeremie-piellard/" title="LinkedIn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" viewBox="0 0 512 512">
+            <path d="M30 177l93-1v304l-93 1v-304z" />
+            <path d="M200 177l89-1v39l0 11c26-26 53-45 97-45 51 0 100 21 100 91v208l-90 1v-159c0-35-9-58-51-58-37 0-52 7-52 55v160l-92 1v-304z" />
+            <path d="M128 81c0 28-23 51-51 51s-51-23-51-51c0-28 23-51 51-51 28 0 51 23 51 51z" />
+          </svg>
+        </a>
+      </div>
+    </footer>
+  </body>
+
+</html>

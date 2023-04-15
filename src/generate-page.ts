@@ -11,6 +11,10 @@ const data = {
         "You can also zoom in and explore the fractals with the mouse.",
     ],
     githubProjectName: "chaos-game-webgl",
+    readme: {
+        filepath: path.join(__dirname, "..", "README.md"),
+        branchName: "master"
+    },
     additionalLinks: [],
     scriptFiles: [
         "script/main.min.js",
