@@ -3,6 +3,8 @@ This project is an implementation of different Chaos Game variations running on 
 
 See it live [here](https://piellardj.github.io/chaos-game-webgl/?page%3Acanvas%3Afullscreen=true&page%3Acanvas%3Asidepane=true).
 
+[![Donate](https://raw.githubusercontent.com/piellardj/piellardj.github.io/master/images/readme/donate-paypal.svg)](https://www.paypal.com/donate/?hosted_button_id=AF7H7GEJTL95E)
+
 ## Description
 
 The Chaos Game is an iterative way of drawing fractals using a number of fixed invisible points called attractors and a single point that is repeatedly moved and drawn on the canvas. The initial position of the point is picked randomly on the canvas, and then the next position is computed as follow: a random attractor is chosen and the point is moved a fraction of the distance towards this attractor.
